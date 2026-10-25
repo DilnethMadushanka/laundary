@@ -966,14 +966,15 @@ const SITE = window.SITE;
 
 async function main() {
   const THREE = await import('three');
-  const [{ RoomEnvironment }, { RoundedBoxGeometry }, { Reflector }, { EffectComposer }, { RenderPass }, { UnrealBloomPass }, { OutputPass }] = await Promise.all([
+  const [{ RoomEnvironment }, { RoundedBoxGeometry }, { Reflector }, { EffectComposer }, { RenderPass }, { UnrealBloomPass }, { OutputPass }, { ShaderPass }] = await Promise.all([
     import('three/addons/environments/RoomEnvironment.js'),
     import('three/addons/geometries/RoundedBoxGeometry.js'),
     import('three/addons/objects/Reflector.js'),
     import('three/addons/postprocessing/EffectComposer.js'),
     import('three/addons/postprocessing/RenderPass.js'),
     import('three/addons/postprocessing/UnrealBloomPass.js'),
-    import('three/addons/postprocessing/OutputPass.js')
+    import('three/addons/postprocessing/OutputPass.js'),
+    import('three/addons/postprocessing/ShaderPass.js')
   ]);
   SITE.loader.set(60);
 
@@ -1008,6 +1009,17 @@ async function main() {
 
   const composer = new EffectComposer(renderer, new THREE.WebGLRenderTarget(innerWidth, innerHeight, { type: THREE.HalfFloatType, samples: lowPower ? 0 : 4 }));
   composer.addPass(new RenderPass(scene, camera));
+  // Some GPUs output NaN/Inf for a few pixels; bloom would smear those into big black boxes, so clean them first.
+  composer.addPass(new ShaderPass({
+    uniforms: { tDiffuse: { value: null } },
+    vertexShader: `varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+    fragmentShader: `uniform sampler2D tDiffuse; varying vec2 vUv;
+      void main(){
+        vec4 c = texture2D(tDiffuse, vUv);
+        if (any(isnan(c)) || any(isinf(c))) c = vec4(0.0, 0.0, 0.0, 1.0);
+        gl_FragColor = vec4(clamp(c.rgb, 0.0, 32.0), 1.0);
+      }`
+  }));
   const bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 0.42, 0.6, 0.9);
   composer.addPass(bloom);
   composer.addPass(new OutputPass());
@@ -1283,12 +1295,13 @@ async function main() {
     vertexShader: `attribute float aSeed; varying vec3 vN; varying vec3 vV; varying float vSeed;
       void main(){
         vec4 wp = modelMatrix * instanceMatrix * vec4(position, 1.0);
-        vN = normalize(mat3(modelMatrix) * mat3(instanceMatrix) * normal);
+        vN = mat3(modelMatrix) * mat3(instanceMatrix) * normal + vec3(0.0, 0.0, 1e-5);
         vV = normalize(cameraPosition - wp.xyz); vSeed = aSeed;
         gl_Position = projectionMatrix * viewMatrix * wp;
       }`,
     fragmentShader: `uniform float uTime; uniform float uOpacity; varying vec3 vN; varying vec3 vV; varying float vSeed;
       void main(){
+        if (dot(vN, vN) < 1e-8) discard;
         vec3 n = normalize(vN), v = normalize(vV);
         float ndv = clamp(dot(n, v), 0.0, 1.0);
         float fr = pow(1.0 - ndv, 2.4);
@@ -1429,8 +1442,10 @@ async function main() {
     // ---- HERO ----
     heroVis = 1 - ease(remap(P.hero, 0.04, 0.55));
     hero.visible = heroVis > 0.002;
-    hero.scale.setScalar(S);
-    hero.position.y = (small ? 0.18 : 0.3) + P.hero * 2.6;
+    // shrink + lift the carousel on short screens so it clears the service name below it
+    const fitH = small ? 1 : clamp((innerHeight - 300) / 620, 0.62, 1);
+    hero.scale.setScalar(S * fitH);
+    hero.position.y = (small ? 0.18 : 0.2 + (1 - fitH) * 0.2) + P.hero * 2.6;
     if (hero.visible) {
       bottles.forEach((b, i) => {
         let d = i - car.pos; d = (((d % N) + N * 1.5) % N) - N / 2;
@@ -1555,7 +1570,7 @@ async function main() {
     bubbles.instanceMatrix.needsUpdate = true;
 
     // ---- glow centre follows the focal object ----
-    if (heroVis > 0.5) tmpV.set(0, (PED_TOP + 0.9) * S + hero.position.y, 0);
+    if (heroVis > 0.5) tmpV.set(0, (PED_TOP + 0.9) * hero.scale.y + hero.position.y, 0);
     else if (SITE.active === 'pricing' || SITE.active === 'how' || SITE.active === 'faq') tmpV.set(0, 0.3, 0);
     else tmpV.set(M.x, M.y, M.z);
     tmpV.project(camera);
