@@ -1,4 +1,4 @@
-# [BUSINESS NAME] — Laundry website
+# Trivex Laundry — Laundry website
 
 A single-page, animated 3D website for a laundry business in [CITY], Sri Lanka.
 Everything lives in `index.html` (Three.js r160, GSAP + ScrollTrigger and Lenis load from CDNs). Every 3D object is built in code, so there are no model files.
