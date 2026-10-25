@@ -1,0 +1,1594 @@
+<!doctype html>
+<html lang="en" class="is-loading">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>[BUSINESS NAME] — Premium Laundry in [CITY]</title>
+<meta name="description" content="Premium laundry, dry cleaning and ironing with free pickup and delivery in [CITY], Sri Lanka.">
+<meta name="theme-color" content="#0a0a0f">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- Noto Sans Sinhala is listed so Sinhala text renders nicely once you add translations (it only downloads when Sinhala glyphs are used). -->
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700&family=Noto+Sans+Sinhala:wght@400;600;800&display=swap" rel="stylesheet">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js"></script>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+
+<style>
+:root{
+  --bg:#0a0a0f;
+  --accent:#22d8ff;
+  --text:#f4f6fb;
+  --muted:rgba(244,246,251,.64);
+  --faint:rgba(244,246,251,.38);
+  --line:rgba(255,255,255,.12);
+  --glass:rgba(255,255,255,.055);
+  --glass-strong:rgba(255,255,255,.09);
+  --display:'Anton','Bebas Neue',Impact,'Noto Sans Sinhala',sans-serif;
+  --sans:'Inter','Noto Sans Sinhala',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --gutter:clamp(16px,4vw,56px);
+  --radius:26px;
+  color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{background:var(--bg)}
+html.lenis,html.lenis body{height:auto}
+.lenis.lenis-smooth{scroll-behavior:auto!important}
+.lenis.lenis-stopped{overflow:hidden}
+html.is-loading,html.is-loading body{overflow:hidden}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+button,input,select,textarea{font:inherit;color:inherit}
+img,svg{display:block}
+.sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:6px}
+
+/* ---------- 3D canvas + fallback glow ---------- */
+#webgl{position:fixed;inset:0;width:100%;height:100%;z-index:0;display:block;touch-action:pan-y}
+html.no-webgl #webgl{display:none}
+html.no-webgl body{background:radial-gradient(60% 50% at 50% 45%,color-mix(in srgb,var(--accent) 28%,transparent),transparent 70%) fixed,var(--bg)}
+body.hover-bottle{cursor:pointer}
+main{position:relative;z-index:1}
+main>section{position:relative}
+
+/* ---------- Loader ---------- */
+.loader{position:fixed;inset:0;z-index:100;background:var(--bg);display:grid;place-items:center;transition:opacity .8s ease,visibility .8s ease}
+html.loaded .loader{opacity:0;visibility:hidden}
+.loader-inner{display:grid;justify-items:center;gap:22px}
+.drum{width:132px;height:132px;border-radius:50%;position:relative;background:radial-gradient(circle at 35% 30%,#fff,#c9d0da 45%,#7d8794 100%);box-shadow:0 0 60px color-mix(in srgb,var(--accent) 45%,transparent)}
+.drum::before{content:"";position:absolute;inset:14px;border-radius:50%;background:#12141a;box-shadow:inset 0 0 0 4px #2a2e38}
+.drum-spin{position:absolute;inset:20px;border-radius:50%;overflow:hidden;animation:spin 1.1s linear infinite;
+  background:radial-gradient(circle,#3a404c 2.2px,transparent 2.6px) 0 0/13px 13px,linear-gradient(#1b1f27,#1b1f27)}
+.drum-spin::after{content:"";position:absolute;left:-10%;right:-10%;bottom:-8%;height:52%;border-radius:45% 55% 0 0;background:linear-gradient(color-mix(in srgb,var(--accent) 85%,#fff),color-mix(in srgb,var(--accent) 60%,#000));opacity:.85;animation:slosh 1.6s ease-in-out infinite alternate}
+.drum-glass{position:absolute;inset:20px;border-radius:50%;background:linear-gradient(135deg,rgba(255,255,255,.35),transparent 45%)}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes slosh{from{transform:rotate(-14deg) translateY(4px)}to{transform:rotate(14deg)}}
+.loader-count{font-family:var(--display);font-size:64px;line-height:1;letter-spacing:.02em;font-variant-numeric:tabular-nums}
+.loader-label{font-size:12px;letter-spacing:.28em;text-transform:uppercase;color:var(--faint)}
+
+/* ---------- Nav ---------- */
+.nav{position:fixed;top:0;left:0;right:0;z-index:50;height:76px;padding:0 var(--gutter);display:grid;grid-template-columns:1fr auto 1fr;align-items:center;background:linear-gradient(rgba(10,10,15,.85),rgba(10,10,15,0))}
+.nav-links{display:flex;gap:28px}
+.nav-links a,.menu-btn{font-size:12px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);transition:color .25s}
+.nav-links a:hover{color:var(--text)}
+.logo{display:flex;align-items:center;gap:10px;font-family:var(--display);font-size:22px;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}
+.logo-mark{width:30px;height:30px;flex:none}
+.nav-right{display:flex;justify-content:flex-end;align-items:center;gap:14px}
+.pill{display:inline-flex;align-items:center;gap:10px;height:44px;padding:0 22px;border-radius:999px;font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;border:1px solid color-mix(in srgb,var(--accent) 70%,transparent);background:color-mix(in srgb,var(--accent) 16%,transparent);box-shadow:0 0 28px color-mix(in srgb,var(--accent) 30%,transparent),inset 0 0 12px color-mix(in srgb,var(--accent) 18%,transparent);transition:transform .25s,background .25s;cursor:pointer}
+.pill:hover{transform:translateY(-2px);background:color-mix(in srgb,var(--accent) 28%,transparent)}
+.pill .dot{width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 10px var(--accent)}
+.lang-btn{background:none;border:1px solid var(--line);border-radius:999px;height:36px;padding:0 14px;font-size:12px;letter-spacing:.1em;cursor:pointer;color:var(--muted)}
+.menu-btn{display:none;background:none;border:0;padding:8px 0;cursor:pointer}
+.mobile-menu{position:fixed;inset:0;z-index:49;background:rgba(10,10,15,.94);backdrop-filter:blur(14px);display:grid;place-content:center;gap:18px;text-align:center;opacity:0;visibility:hidden;transition:.35s}
+.mobile-menu.open{opacity:1;visibility:visible}
+.mobile-menu a{font-family:var(--display);font-size:44px;text-transform:uppercase}
+
+/* ---------- Section indicator ---------- */
+.dots{position:fixed;right:clamp(10px,2vw,28px);top:50%;transform:translateY(-50%);z-index:40;display:flex;flex-direction:column;align-items:center;gap:14px;list-style:none;margin:0;padding:0}
+.dots button{position:relative;width:18px;height:18px;border:0;padding:0;background:none;cursor:pointer;display:grid;place-items:center}
+.dots button::before{content:"";width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.32);transition:.35s}
+.dots button.active::before{width:10px;height:10px;background:var(--accent);box-shadow:0 0 14px var(--accent)}
+.dots button span{position:absolute;right:26px;white-space:nowrap;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--text);opacity:0;transform:translateX(6px);transition:.25s;pointer-events:none}
+.dots button:hover span,.dots button.active span{opacity:.9;transform:none}
+.dots .sub{display:flex;flex-direction:column;gap:6px;align-items:center;max-height:0;overflow:hidden;transition:max-height .5s ease}
+.dots .sub.open{max-height:120px}
+.dots .sub i{width:2px;height:12px;border-radius:2px;background:rgba(255,255,255,.22);transition:.3s}
+.dots .sub i.on{background:var(--accent);height:18px;box-shadow:0 0 10px var(--accent)}
+
+/* ---------- Generic ---------- */
+.section{position:relative;padding:clamp(96px,14vh,160px) var(--gutter)}
+.wrap{max-width:1240px;margin:0 auto}
+.eyebrow{display:inline-flex;align-items:center;gap:10px;font-size:12px;font-weight:600;letter-spacing:.26em;text-transform:uppercase;color:var(--muted)}
+.eyebrow::before{content:"";width:22px;height:1px;background:var(--accent);box-shadow:0 0 8px var(--accent)}
+.title{font-family:var(--display);font-weight:400;text-transform:uppercase;font-size:clamp(54px,9vw,148px);line-height:.88;letter-spacing:.005em;margin:.18em 0 .2em}
+.title .outline{color:transparent;-webkit-text-stroke:1.5px rgba(255,255,255,.85)}
+.lead{color:var(--muted);font-size:clamp(16px,1.3vw,19px);max-width:560px;margin:0}
+.glass{background:var(--glass);border:1px solid var(--line);backdrop-filter:blur(18px) saturate(140%);-webkit-backdrop-filter:blur(18px) saturate(140%);border-radius:var(--radius)}
+
+/* ---------- Hero ---------- */
+#hero{height:100vh;height:100svh;min-height:560px;pointer-events:none}
+.hero-top{position:absolute;top:104px;left:0;right:0;text-align:center}
+.hero-info{position:absolute;left:50%;bottom:clamp(22px,5vh,56px);transform:translateX(-50%);width:min(820px,calc(100% - 32px));text-align:center;pointer-events:auto}
+.svc-count{font-size:12px;font-weight:600;letter-spacing:.3em;color:var(--faint);font-variant-numeric:tabular-nums}
+.svc-count b{color:var(--accent);font-weight:600}
+.svc-name{font-family:var(--display);font-weight:400;font-size:clamp(44px,6.2vw,100px);line-height:.92;margin:6px 0 4px;overflow:hidden;text-transform:uppercase}
+.svc-name-inner{display:inline-block;will-change:transform}
+.svc-tag{margin:0 auto;color:var(--muted);font-size:clamp(14px,1.2vw,17px);max-width:520px;min-height:1.6em}
+.svc-controls{margin-top:18px;display:flex;align-items:center;justify-content:center;gap:18px}
+.arrow{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:rgba(255,255,255,.04);display:grid;place-items:center;cursor:pointer;transition:.25s}
+.arrow:hover{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 16%,transparent)}
+.svc-track{position:relative;width:min(360px,52vw);height:2px;background:rgba(255,255,255,.14);border-radius:2px}
+.svc-fill{position:absolute;inset:0;transform-origin:left;background:var(--accent);box-shadow:0 0 12px var(--accent);border-radius:2px;transition:transform .7s cubic-bezier(.2,.8,.2,1)}
+.svc-segs{position:absolute;inset:-14px 0;display:flex}
+.svc-segs button{flex:1;border:0;background:none;cursor:pointer;padding:0}
+.hero-hint{margin-top:12px;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--faint)}
+.scroll-cue{position:absolute;left:var(--gutter);bottom:36px;display:flex;align-items:center;gap:12px;font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--faint)}
+.scroll-cue i{width:1px;height:46px;background:linear-gradient(var(--accent),transparent);animation:cue 1.8s ease-in-out infinite;transform-origin:top}
+@keyframes cue{0%{transform:scaleY(0)}50%{transform:scaleY(1)}100%{transform:scaleY(1);opacity:0}}
+
+/* ---------- Story ---------- */
+#story{height:100vh;height:100svh;padding:0;pointer-events:none}
+.story-panels{position:absolute;left:clamp(20px,7vw,120px);top:50%;transform:translateY(-50%);width:min(460px,40vw);height:340px}
+.panel{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;opacity:0;visibility:hidden}
+.tag{align-self:flex-start;display:inline-flex;gap:10px;align-items:center;padding:7px 14px;border-radius:999px;border:1px solid color-mix(in srgb,var(--accent) 55%,transparent);background:color-mix(in srgb,var(--accent) 12%,transparent);font-size:11px;font-weight:600;letter-spacing:.22em;text-transform:uppercase}
+.tag b{color:var(--accent);font-weight:600}
+.panel h2{font-family:var(--display);font-weight:400;text-transform:uppercase;font-size:clamp(42px,5.4vw,86px);line-height:.92;margin:18px 0 14px}
+.panel p{margin:0;color:var(--muted);font-size:clamp(16px,1.3vw,19px)}
+.story-meter{position:absolute;left:clamp(20px,7vw,120px);bottom:40px;display:flex;align-items:center;gap:14px;font-size:12px;letter-spacing:.24em;color:var(--faint);font-variant-numeric:tabular-nums}
+.story-meter .bar{width:120px;height:2px;background:rgba(255,255,255,.14);position:relative}
+.story-meter .bar i{position:absolute;inset:0;background:var(--accent);transform-origin:left;transform:scaleX(0)}
+.story-meter b{color:var(--text);font-weight:600}
+
+/* ---------- Statement ---------- */
+#statement{height:170vh;pointer-events:none}
+.statement-caption{position:absolute;left:0;right:0;bottom:22vh;text-align:center;font-size:12px;letter-spacing:.3em;text-transform:uppercase;color:var(--muted)}
+.statement-fallback{display:none}
+html.no-webgl .statement-fallback{display:block;position:sticky;top:30vh;text-align:center;font-family:var(--display);font-size:clamp(60px,14vw,220px);line-height:.9}
+
+/* ---------- Pricing ---------- */
+.section-head{display:grid;gap:8px;margin-bottom:clamp(40px,6vw,72px)}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(16px,2vw,28px);perspective:1200px}
+.card{position:relative;padding:clamp(26px,2.6vw,38px);display:flex;flex-direction:column;gap:18px;transform-style:preserve-3d;transform:translateY(var(--lift,0)) rotateX(var(--rx,0)) rotateY(var(--ry,0));transition:transform .45s cubic-bezier(.2,.8,.2,1),border-color .3s,box-shadow .3s;will-change:transform}
+.card::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:radial-gradient(420px circle at var(--mx,50%) var(--my,0%),rgba(255,255,255,.14),transparent 45%);opacity:var(--glare,0);transition:opacity .3s}
+.card.hover{--lift:-12px;--glare:1;border-color:color-mix(in srgb,var(--accent) 55%,transparent);box-shadow:0 30px 80px rgba(0,0,0,.45),0 0 50px color-mix(in srgb,var(--accent) 18%,transparent);transition:transform .12s linear,border-color .3s,box-shadow .3s}
+.card.featured{background:var(--glass-strong);border-color:color-mix(in srgb,var(--accent) 40%,transparent)}
+.badge{position:absolute;top:22px;right:22px;font-size:10px;font-weight:700;letter-spacing:.2em;padding:6px 10px;border-radius:999px;background:var(--accent);color:#06070a}
+.card h3{font-family:var(--display);font-weight:400;font-size:40px;letter-spacing:.02em;margin:0;line-height:1}
+.card .desc{color:var(--muted);margin:0;font-size:15px}
+.price{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;transform:translateZ(30px)}
+.price small{font-size:13px;letter-spacing:.16em;color:var(--muted);font-weight:600}
+.price strong{font-family:var(--display);font-weight:400;font-size:clamp(34px,3.4vw,52px);line-height:1}
+.price span{color:var(--muted);font-size:14px}
+.feat{list-style:none;padding:0;margin:4px 0 8px;display:grid;gap:10px;font-size:15px}
+.feat li{display:flex;gap:10px;align-items:flex-start}
+.feat svg{flex:none;margin-top:4px;color:var(--accent)}
+.btn{margin-top:auto;display:inline-flex;justify-content:center;align-items:center;height:50px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.05);font-weight:600;font-size:14px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:.25s}
+.btn:hover,.card.featured .btn{background:var(--text);color:#0a0a0f;border-color:var(--text)}
+.price-note{margin-top:22px;color:var(--faint);font-size:13px;text-align:center}
+
+/* ---------- How it works ---------- */
+.steps{position:relative;display:grid;grid-template-columns:repeat(4,1fr);gap:24px;--p:0}
+.steps-line{position:absolute;left:12.5%;right:12.5%;top:52px;height:2px;background:rgba(255,255,255,.12)}
+.steps-line i{position:absolute;left:0;top:0;bottom:0;width:calc(var(--p) * 100%);background:var(--accent);box-shadow:0 0 14px var(--accent)}
+.step{position:relative;text-align:center;display:grid;justify-items:center;gap:10px}
+.step-icon{width:104px;height:104px;border-radius:50%;display:grid;place-items:center;background:rgba(14,15,22,.82);border:1px solid var(--line);backdrop-filter:blur(10px);transition:border-color .5s,box-shadow .5s,transform .5s}
+.step-icon svg{width:46px;height:46px;stroke:rgba(255,255,255,.4);transition:stroke .5s}
+.step-icon svg .draw{stroke-dasharray:var(--len,200);stroke-dashoffset:var(--len,200);transition:stroke-dashoffset 1.2s cubic-bezier(.3,.7,.2,1)}
+.step.on .step-icon{border-color:var(--accent);box-shadow:0 0 40px color-mix(in srgb,var(--accent) 35%,transparent);transform:scale(1.04)}
+.step.on .step-icon svg{stroke:var(--text)}
+.step.on .step-icon svg .draw{stroke-dashoffset:0}
+.step.on .step-icon svg .accent{stroke:var(--accent)}
+.step.on .anim-bob{animation:bob 2.4s ease-in-out infinite}
+.step.on .anim-spin{animation:spin 2.2s linear infinite;transform-box:fill-box;transform-origin:center}
+@keyframes bob{50%{transform:translateY(-3px)}}
+.step-num{font-size:11px;letter-spacing:.3em;color:var(--faint);margin-top:12px}
+.step h3{font-family:var(--display);font-weight:400;font-size:32px;margin:0;line-height:1;text-transform:uppercase}
+.step p{margin:0;color:var(--muted);font-size:15px;max-width:240px}
+
+/* ---------- FAQ ---------- */
+.faq-grid{display:grid;grid-template-columns:5fr 7fr;gap:clamp(32px,5vw,80px);align-items:start}
+.faq-head{position:sticky;top:120px}
+.acc{display:grid;gap:12px}
+.acc-item{border-radius:20px;overflow:hidden;transition:border-color .3s,background .3s}
+.acc-item.open{border-color:color-mix(in srgb,var(--accent) 45%,transparent);background:var(--glass-strong)}
+.acc-q{width:100%;display:flex;justify-content:space-between;align-items:center;gap:20px;text-align:left;padding:22px 24px;background:none;border:0;cursor:pointer;font-size:clamp(16px,1.3vw,19px);font-weight:600}
+.acc-q .plus{flex:none;width:30px;height:30px;border-radius:50%;border:1px solid var(--line);position:relative;transition:transform .4s,border-color .3s}
+.acc-q .plus::before,.acc-q .plus::after{content:"";position:absolute;left:50%;top:50%;width:12px;height:1.5px;background:currentColor;transform:translate(-50%,-50%)}
+.acc-q .plus::after{transform:translate(-50%,-50%) rotate(90deg)}
+.acc-item.open .plus{transform:rotate(45deg);border-color:var(--accent)}
+.acc-a{display:grid;grid-template-rows:0fr;transition:grid-template-rows .45s cubic-bezier(.2,.8,.2,1)}
+.acc-item.open .acc-a{grid-template-rows:1fr}
+.acc-a>div{overflow:hidden}
+.acc-a p{margin:0;padding:0 24px 24px;color:var(--muted)}
+
+/* ---------- Booking ---------- */
+.book-grid{display:grid;grid-template-columns:minmax(0,640px) 1fr;gap:40px}
+.form{padding:clamp(22px,3vw,40px);display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.field{display:grid;gap:7px}
+.field.full{grid-column:1/-1}
+.field label{font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.field input,.field select,.field textarea{width:100%;min-height:52px;padding:14px 16px;border-radius:14px;border:1px solid var(--line);background:rgba(10,10,15,.55);outline:none;transition:border-color .25s,box-shadow .25s;font-size:16px}
+.field textarea{min-height:88px;resize:vertical}
+.field select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);background-position:calc(100% - 22px) 50%,calc(100% - 16px) 50%;background-size:6px 6px;background-repeat:no-repeat;padding-right:40px}
+.field select option{background:#14151c}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent);box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 18%,transparent)}
+.field input::-webkit-calendar-picker-indicator{filter:invert(1);opacity:.6}
+.form-actions{grid-column:1/-1;display:grid;gap:14px;margin-top:6px}
+.submit{height:56px;border-radius:999px;border:0;background:var(--text);color:#0a0a0f;font-weight:700;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:transform .25s,box-shadow .25s}
+.submit:hover{transform:translateY(-2px);box-shadow:0 14px 40px rgba(255,255,255,.18)}
+.or{display:flex;align-items:center;gap:14px;color:var(--faint);font-size:12px;letter-spacing:.2em;text-transform:uppercase}
+.or::before,.or::after{content:"";flex:1;height:1px;background:var(--line)}
+.wa{display:flex;align-items:center;justify-content:center;gap:14px;height:68px;border-radius:999px;background:#25d366;color:#04140a;font-weight:800;font-size:clamp(16px,1.6vw,20px);letter-spacing:.04em;text-transform:uppercase;box-shadow:0 14px 50px rgba(37,211,102,.35);transition:transform .25s,box-shadow .25s}
+.wa:hover{transform:translateY(-3px) scale(1.01);box-shadow:0 20px 60px rgba(37,211,102,.5)}
+.wa svg{width:30px;height:30px}
+.toast{position:fixed;left:50%;bottom:28px;transform:translate(-50%,20px);z-index:60;padding:14px 22px;border-radius:999px;background:rgba(20,22,30,.92);border:1px solid var(--line);font-size:14px;opacity:0;visibility:hidden;transition:.35s;max-width:calc(100% - 32px);text-align:center}
+.toast.show{opacity:1;visibility:visible;transform:translate(-50%,0)}
+
+/* ---------- Footer ---------- */
+footer{position:relative;z-index:1;padding:80px var(--gutter) 30px;border-top:1px solid var(--line);background:linear-gradient(rgba(10,10,15,.88),rgba(10,10,15,.98));backdrop-filter:blur(6px)}
+.foot{display:grid;grid-template-columns:1.2fr 1fr 1fr 1.4fr;gap:clamp(24px,4vw,56px)}
+.foot h4{margin:0 0 14px;font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--faint);font-weight:600}
+.foot p{margin:0;color:var(--muted);font-size:15px}
+.hours{list-style:none;margin:0;padding:0;display:grid;gap:8px;color:var(--muted);font-size:15px}
+.hours li{display:flex;justify-content:space-between;gap:16px;border-bottom:1px dashed var(--line);padding-bottom:8px}
+.social{display:flex;gap:10px;margin-top:18px}
+.social a{width:42px;height:42px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;transition:.25s}
+.social a:hover{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 14%,transparent)}
+.social svg{width:18px;height:18px}
+.map{width:100%;height:210px;border:0;border-radius:18px;filter:grayscale(1) invert(.92) contrast(.9);background:#15161d}
+.foot-bottom{margin-top:56px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;color:var(--faint);font-size:13px}
+
+/* ---------- Reveal defaults (animated by GSAP) ---------- */
+.reveal{will-change:transform,opacity}
+
+/* ---------- Responsive ---------- */
+@media (max-width:1024px){
+  .cards{grid-template-columns:1fr;max-width:520px;margin:0 auto}
+  .foot{grid-template-columns:1fr 1fr}
+}
+@media (max-width:767px),(max-aspect-ratio:4/5){
+  .nav{height:64px;grid-template-columns:auto 1fr auto}
+  .nav-links{display:none}
+  .menu-btn{display:block}
+  .logo{justify-self:center;font-size:18px}
+  .logo-mark{width:24px;height:24px}
+  .pill{height:38px;padding:0 14px;font-size:11px}
+  .pill .dot{display:none}
+  .dots{right:6px;gap:10px}
+  .dots button span{display:none}
+  .hero-top{top:80px}
+  .scroll-cue{display:none}
+  .story-panels{top:84px;transform:none;left:20px;right:20px;width:auto;height:38vh;min-height:250px}
+  .panel{justify-content:flex-start}
+  .panel h2{margin:14px 0 10px}
+  .story-meter{left:20px;bottom:22px}
+  .steps{grid-template-columns:1fr;gap:34px;max-width:420px;margin:0 auto;text-align:left}
+  .steps-line{left:51px;right:auto;top:52px;bottom:52px;width:2px;height:auto}
+  .steps-line i{width:auto;right:0;height:calc(var(--p) * 100%)}
+  .step{grid-template-columns:104px 1fr;text-align:left;justify-items:start;align-items:center;column-gap:20px}
+  .step-icon{grid-row:span 3}
+  .step-num{margin-top:0}
+  .faq-grid{grid-template-columns:1fr}
+  .faq-head{position:static}
+  .book-grid{grid-template-columns:1fr}
+  .form{grid-template-columns:1fr}
+  .foot{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
+}
+</style>
+</head>
+<body>
+
+<!-- Loading screen -->
+<div class="loader" id="loader" aria-hidden="true">
+  <div class="loader-inner">
+    <div class="drum"><div class="drum-spin"></div><div class="drum-glass"></div></div>
+    <div class="loader-count"><span id="loaderNum">0</span>%</div>
+    <div class="loader-label" data-t="loader"></div>
+  </div>
+</div>
+
+<canvas id="webgl" aria-hidden="true"></canvas>
+
+<!-- Top navigation -->
+<header class="nav">
+  <nav class="nav-links" aria-label="Primary">
+    <a href="#hero" data-t="nav.services"></a>
+    <a href="#pricing" data-t="nav.pricing"></a>
+    <a href="#faq" data-t="nav.faq"></a>
+  </nav>
+  <button class="menu-btn" id="menuBtn" aria-expanded="false" aria-controls="mobileMenu" data-t="nav.menu"></button>
+  <a href="#hero" class="logo" aria-label="Home">
+    <svg class="logo-mark" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+      <circle cx="16" cy="16" r="14" stroke="currentColor" stroke-width="2"/>
+      <circle cx="16" cy="16" r="8.5" stroke="var(--accent)" stroke-width="2"/>
+      <path d="M8.5 18c2.5 2 5 2 7.5 0s5-2 7.5 0" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"/>
+      <circle cx="23.5" cy="7.5" r="2" fill="currentColor"/>
+    </svg>
+    <span data-config="businessName"></span>
+  </a>
+  <div class="nav-right">
+    <button class="lang-btn" id="langBtn" hidden></button>
+    <a href="#book" class="pill"><span class="dot"></span><span data-t="nav.book"></span></a>
+  </div>
+</header>
+<div class="mobile-menu" id="mobileMenu">
+  <a href="#hero" data-t="nav.services"></a>
+  <a href="#pricing" data-t="nav.pricing"></a>
+  <a href="#faq" data-t="nav.faq"></a>
+  <a href="#book" data-t="nav.book"></a>
+</div>
+
+<!-- Right edge section indicator (built from JS) -->
+<ul class="dots" id="dots" aria-label="Sections"></ul>
+
+<main>
+  <!-- 1. HERO / SERVICE CAROUSEL -->
+  <section id="hero" data-section="hero" aria-label="Services">
+    <div class="hero-top"><span class="eyebrow" data-t="hero.eyebrow"></span></div>
+    <div class="hero-info">
+      <div class="svc-count"><b id="svcNum">01</b> / <span id="svcTotal">06</span></div>
+      <h1 class="svc-name"><span class="svc-name-inner" id="svcName"></span></h1>
+      <p class="svc-tag" id="svcTag"></p>
+      <div class="svc-controls">
+        <button class="arrow" id="prevSvc" aria-label="Previous service"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 5l-7 7 7 7"/></svg></button>
+        <div class="svc-track"><div class="svc-fill" id="svcFill"></div><div class="svc-segs" id="svcSegs"></div></div>
+        <button class="arrow" id="nextSvc" aria-label="Next service"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5l7 7-7 7"/></svg></button>
+      </div>
+      <div class="hero-hint" data-t="hero.hint"></div>
+    </div>
+    <div class="scroll-cue"><i></i><span data-t="hero.scroll"></span></div>
+  </section>
+
+  <!-- 2. SCROLL STORY (pinned) -->
+  <section id="story" data-section="story" aria-label="Why choose us">
+    <div class="story-panels" id="storyPanels"></div>
+    <div class="story-meter"><b id="storyNum">01</b><div class="bar"><i id="storyBar"></i></div><span id="storyTotal">05</span></div>
+  </section>
+
+  <!-- 3. BIG STATEMENT (the giant text itself is drawn in 3D so the machine can pass in front of it) -->
+  <section id="statement" data-section="statement">
+    <h2 class="sr-only" data-t="statement.line"></h2>
+    <div class="statement-fallback" aria-hidden="true" data-t="statement.line"></div>
+    <p class="statement-caption" data-t="statement.caption"></p>
+  </section>
+
+  <!-- 4. PRICING -->
+  <section id="pricing" class="section" data-section="pricing">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow reveal" data-t="pricing.eyebrow"></span>
+        <h2 class="title reveal" data-t="pricing.title"></h2>
+        <p class="lead reveal" data-t="pricing.sub"></p>
+      </div>
+      <div class="cards" id="cards"></div>
+      <p class="price-note reveal" data-t="pricing.note"></p>
+    </div>
+  </section>
+
+  <!-- 5. HOW IT WORKS -->
+  <section id="how" class="section" data-section="how">
+    <div class="wrap">
+      <div class="section-head" style="text-align:center;justify-items:center">
+        <span class="eyebrow reveal" data-t="how.eyebrow"></span>
+        <h2 class="title reveal" data-t="how.title"></h2>
+      </div>
+      <div class="steps" id="steps"><div class="steps-line"><i></i></div></div>
+    </div>
+  </section>
+
+  <!-- 6. FAQ -->
+  <section id="faq" class="section" data-section="faq">
+    <div class="wrap faq-grid">
+      <div class="faq-head">
+        <span class="eyebrow reveal" data-t="faq.eyebrow"></span>
+        <h2 class="title reveal"><span data-t="faq.title1"></span><br><span class="outline" data-t="faq.title2"></span></h2>
+        <p class="lead reveal" data-t="faq.sub"></p>
+      </div>
+      <div class="acc" id="acc"></div>
+    </div>
+  </section>
+
+  <!-- 7. BOOK A PICKUP -->
+  <section id="book" class="section" data-section="book" style="min-height:100vh">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow reveal" data-t="book.eyebrow"></span>
+        <h2 class="title reveal" data-t="book.title"></h2>
+        <p class="lead reveal" data-t="book.sub"></p>
+      </div>
+      <div class="book-grid">
+        <form class="form glass reveal" id="bookForm" novalidate>
+          <div class="field"><label for="fName" data-t="book.name"></label><input id="fName" name="name" autocomplete="name" required></div>
+          <div class="field"><label for="fPhone" data-t="book.phone"></label><input id="fPhone" name="phone" type="tel" autocomplete="tel" inputmode="tel" required></div>
+          <div class="field full"><label for="fAddress" data-t="book.address"></label><textarea id="fAddress" name="address" autocomplete="street-address" required></textarea></div>
+          <div class="field full"><label for="fService" data-t="book.service"></label><select id="fService" name="service" required></select></div>
+          <div class="field"><label for="fDate" data-t="book.date"></label><input id="fDate" name="date" type="date" required></div>
+          <div class="field"><label for="fTime" data-t="book.time"></label><select id="fTime" name="time" required></select></div>
+          <div class="field full"><label for="fNotes" data-t="book.notes"></label><input id="fNotes" name="notes"></div>
+          <div class="form-actions">
+            <button type="submit" class="submit" data-t="book.submit"></button>
+            <div class="or" data-t="book.or"></div>
+            <a class="wa" id="waBtn" target="_blank" rel="noopener">
+              <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.65.07-.3-.15-1.26-.46-2.4-1.48-.89-.79-1.49-1.77-1.66-2.07-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.08-.15-.67-1.62-.92-2.22-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.08c.15.2 2.1 3.2 5.08 4.49.71.31 1.26.49 1.69.63.71.23 1.36.2 1.87.12.57-.08 1.76-.72 2-1.41.25-.7.25-1.29.17-1.41-.07-.13-.27-.2-.57-.35zM12.05 21.8h-.01a9.8 9.8 0 0 1-5-1.37l-.36-.21-3.72.98 1-3.63-.24-.37A9.83 9.83 0 1 1 12.05 21.8zm8.36-18.2A11.76 11.76 0 0 0 12.05.13C5.53.13.22 5.43.22 11.95c0 2.08.54 4.12 1.58 5.91L.12 24l6.29-1.65a11.8 11.8 0 0 0 5.64 1.44h.01c6.52 0 11.83-5.3 11.83-11.83 0-3.16-1.23-6.13-3.48-8.36z"/></svg>
+              <span data-t="book.whatsapp"></span>
+            </a>
+          </div>
+        </form>
+        <div aria-hidden="true"></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- FOOTER -->
+<footer>
+  <div class="wrap">
+    <div class="foot">
+      <div>
+        <a href="#hero" class="logo" style="margin-bottom:16px">
+          <svg class="logo-mark" viewBox="0 0 32 32" fill="none" aria-hidden="true"><circle cx="16" cy="16" r="14" stroke="currentColor" stroke-width="2"/><circle cx="16" cy="16" r="8.5" stroke="var(--accent)" stroke-width="2"/><path d="M8.5 18c2.5 2 5 2 7.5 0s5-2 7.5 0" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"/><circle cx="23.5" cy="7.5" r="2" fill="currentColor"/></svg>
+          <span data-config="businessName"></span>
+        </a>
+        <h4 data-t="footer.visit"></h4>
+        <p><span data-config="address"></span><br><span data-config="city"></span>, Sri Lanka</p>
+      </div>
+      <div>
+        <h4 data-t="footer.hours"></h4>
+        <ul class="hours" id="hours"></ul>
+      </div>
+      <div>
+        <h4 data-t="footer.contact"></h4>
+        <p><a id="phoneLink"><span data-config="phone"></span></a></p>
+        <div class="social">
+          <a id="sFacebook" aria-label="Facebook" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 8.5V6.8c0-.8.2-1.3 1.4-1.3H17V2.6c-.3 0-1.3-.1-2.4-.1-2.4 0-4 1.4-4 4.1v1.9H8v3.2h2.6V22H14v-10.3h2.6l.4-3.2H14z"/></svg></a>
+          <a id="sInstagram" aria-label="Instagram" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg></a>
+          <a id="sTiktok" aria-label="TikTok" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.6 2h-3.3v13.3a2.9 2.9 0 1 1-2.9-2.9c.3 0 .6 0 .9.1V9.1a6.2 6.2 0 1 0 5.3 6.2V8.6a7.9 7.9 0 0 0 4.4 1.4V6.7a4.5 4.5 0 0 1-4.4-4.7z"/></svg></a>
+          <a id="sWhatsapp" aria-label="WhatsApp" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.05 2.13C6.6 2.13 2.17 6.55 2.17 12c0 1.74.46 3.44 1.32 4.94L2.1 22l5.2-1.36A9.86 9.86 0 0 0 12.05 21.9c5.45 0 9.88-4.43 9.88-9.88S17.5 2.13 12.05 2.13zm5.42 12.25c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.94 1.17-.17.2-.35.22-.65.07-.3-.15-1.26-.46-2.4-1.48-.89-.79-1.49-1.77-1.66-2.07-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.08-.15-.67-1.62-.92-2.22-.24-.58-.49-.5-.67-.51h-.57c-.2 0-.52.07-.79.37-.27.3-1.04 1.02-1.04 2.48s1.07 2.88 1.21 3.08c.15.2 2.1 3.2 5.08 4.49 2.5 1.08 3 .86 3.56.81.57-.08 1.76-.72 2-1.41.25-.7.25-1.29.17-1.41-.07-.13-.27-.2-.57-.35z"/></svg></a>
+        </div>
+      </div>
+      <div>
+        <h4 data-t="footer.find"></h4>
+        <iframe class="map" id="map" title="Map" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+      </div>
+    </div>
+    <div class="foot-bottom"><span data-t="footer.copy"></span><span data-t="footer.made"></span></div>
+  </div>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* =====================================================================
+   1) BUSINESS DETAILS — replace every [BRACKETED] value below.
+   ===================================================================== */
+const CONFIG = {
+  businessName: '[BUSINESS NAME]',
+  city: '[CITY]',
+  address: '[ADDRESS]',
+  whatsapp: '[94XXXXXXXXX]',        // country code + number, digits only, e.g. 94771234567
+  phone: '[94XXXXXXXXX]',           // shown in the footer, e.g. +94 77 123 4567
+  prices: {                         // LKR amounts, e.g. '450'
+    basic: '[ADD PRICES]',
+    family: '[ADD PRICES]',
+    premium: '[ADD PRICES]'
+  },
+  minimumOrder: '[ADD MINIMUM]',    // kg, used in the FAQ
+  social: { facebook: '#', instagram: '#', tiktok: '#' },
+  defaultLang: 'en'                 // set to 'si' once Sinhala text is added below
+};
+
+/* Colours for each service / step (glow + 3D bottle). Not translated. */
+const STYLE = {
+  services: [
+    { color: '#1fc8f0', cap: '#f4f7fb', glow: '#22d8ff' },  // Wash & Fold — aqua
+    { color: '#8a6cff', cap: '#f4f7fb', glow: '#9a7dff' },  // Dry cleaning — lavender
+    { color: '#ff76b0', cap: '#f4f7fb', glow: '#ff86c0' },  // Ironing — soft pink
+    { color: '#eef2f8', cap: '#22d8ff', glow: '#dfe9ff' },  // Express — clean white
+    { color: '#4f9dff', cap: '#f4f7fb', glow: '#62b0ff' },  // Duvets — sky
+    { color: '#ffa86b', cap: '#1d1f27', glow: '#ffb48a' }   // Shoe care — peach
+  ],
+  story: ['#22d8ff', '#6dffc1', '#a58bff', '#e6eeff', '#ff8fc8'],
+  sections: { statement: '#b8c4ff', pricing: '#9a7dff', how: '#22d8ff', faq: '#ff86c0', book: '#22d8ff' }
+};
+
+/* =====================================================================
+   2) TEXT CONTENT — all wording lives here.
+   To add Sinhala: copy the "en" block into "si" and translate the values
+   (keep keys and array order the same). Anything missing in "si" falls
+   back to English automatically. A language button appears in the nav as
+   soon as "si" has content. {city}, {businessName}, {minimumOrder} and
+   {year} are filled in from CONFIG.
+   ===================================================================== */
+const CONTENT = {
+  en: {
+    loader: 'Loading freshness',
+    nav: { services: 'Services', pricing: 'Pricing', faq: 'FAQ', book: 'Book Pickup', menu: 'Menu', lang: 'සිංහල' },
+    hero: { eyebrow: 'Premium laundry care · {city}, Sri Lanka', hint: 'Click, swipe or use ← → keys', scroll: 'Scroll' },
+    services: [
+      { name: 'Wash & Fold', short: 'Wash & Fold', tagline: 'Everyday laundry, washed, dried and neatly folded.' },
+      { name: 'Dry Cleaning', short: 'Dry Clean', tagline: 'Expert care for suits, sarees and delicate fabrics.' },
+      { name: 'Ironing / Pressing', short: 'Pressing', tagline: 'Crisp, steam-pressed and ready to wear.' },
+      { name: 'Express 24H', short: 'Express 24H', tagline: 'In by morning, back by tomorrow.' },
+      { name: 'Duvets & Curtains', short: 'Duvets', tagline: 'Big, bulky items, deep-cleaned and fresh.' },
+      { name: 'Shoe Care', short: 'Shoe Care', tagline: 'Sneakers and leather, cleaned and restored.' }
+    ],
+    story: [
+      { tag: 'Doorstep', title: 'Free pickup & delivery', text: 'We collect from your door and return it fresh.' },
+      { tag: 'Planet-friendly', title: 'Eco-friendly detergents', text: 'Gentle on fabrics, gentle on the planet.' },
+      { tag: 'Fast', title: '24-hour turnaround', text: 'Drop it today, wear it tomorrow.' },
+      { tag: 'Clean', title: 'Hygienic & sanitised', text: 'Hot-wash sanitisation on every load.' },
+      { tag: 'Care', title: 'Folded with care', text: 'Crisp, packed and ready for your wardrobe.' }
+    ],
+    statement: { line: 'Fresh. Every. Time.', caption: 'Premium laundry & dry cleaning in {city}' },
+    pricing: {
+      eyebrow: 'Simple pricing', title: 'Pricing', sub: 'Clear prices in LKR. Free pickup and delivery on every plan.',
+      note: 'Prices in Sri Lankan Rupees (LKR). Special items quoted on pickup.',
+      currency: 'LKR',
+      plans: [
+        { key: 'basic', name: 'Basic', unit: 'per kg', desc: 'Everyday wash & fold', service: 0,
+          features: ['Wash, dry & fold', 'Eco-friendly detergents', 'Free pickup & delivery', '48-hour turnaround'], cta: 'Choose Basic' },
+        { key: 'family', name: 'Family', unit: 'per kg', desc: 'Bigger loads, better value', service: 0, badge: 'Most popular',
+          features: ['Everything in Basic', 'Bulk-load pricing', 'Whites & colours washed separately', 'Bedsheets & towels included'], cta: 'Choose Family' },
+        { key: 'premium', name: 'Premium', unit: 'per item', desc: 'Dry cleaning & pressing', service: 1,
+          features: ['Dry cleaning & steam pressing', 'Suits, sarees & delicates', 'Express 24H available', 'Hanger or folded packing'], cta: 'Choose Premium' }
+      ]
+    },
+    how: {
+      eyebrow: 'How it works', title: 'Four easy steps',
+      steps: [
+        { title: 'Book', text: 'Book online or on WhatsApp in under a minute.' },
+        { title: 'We pick up', text: 'Our rider collects from your door at a time that suits you.' },
+        { title: 'We clean', text: 'Sorted, washed, dried and pressed with care.' },
+        { title: 'We deliver', text: 'Fresh, folded and back at your door.' }
+      ]
+    },
+    faq: {
+      eyebrow: 'FAQ', title1: 'Any', title2: 'Questions?', sub: 'Can’t find your answer? Message us on WhatsApp and we’ll reply quickly.',
+      items: [
+        { q: 'How long does it take?', a: 'Standard orders come back within 48 hours. Choose Express 24H and we’ll return your laundry the next day.' },
+        { q: 'Which areas do you deliver to?', a: 'We offer free pickup and delivery across {city} and nearby areas. Send us your location on WhatsApp to confirm.' },
+        { q: 'How can I pay?', a: 'Pay by cash on delivery, bank transfer or card. We send you a clear bill before delivery.' },
+        { q: 'Can you remove tough stains?', a: 'We pre-treat every visible stain with fabric-safe methods. Most stains come out completely, but very old or set-in stains can’t always be guaranteed. We’ll always tell you.' },
+        { q: 'What if an item is damaged?', a: 'We check every item at pickup and handle your clothes with care. In the rare case something is damaged while with us, tell us within 24 hours of delivery and we’ll make it right under our care policy.' },
+        { q: 'Is there a minimum order?', a: 'Free pickup applies to orders of {minimumOrder} kg or more. Smaller orders are welcome with a small delivery fee.' }
+      ]
+    },
+    book: {
+      eyebrow: 'Book a pickup', title: 'Book your pickup', sub: 'Tell us when to come. We’ll confirm on WhatsApp within minutes.',
+      name: 'Full name', phone: 'Phone number', address: 'Pickup address', service: 'Service', date: 'Pickup date',
+      time: 'Pickup time', notes: 'Notes (optional)', submit: 'Send booking via WhatsApp', or: 'or',
+      whatsapp: 'Chat on WhatsApp', sending: 'Opening WhatsApp with your booking details…', invalid: 'Please fill in the highlighted fields.',
+      slots: ['8:00 – 10:00 AM', '10:00 AM – 12:00 PM', '12:00 – 2:00 PM', '2:00 – 4:00 PM', '4:00 – 6:00 PM', '6:00 – 8:00 PM'],
+      message: 'Hi {businessName}! I’d like to book a pickup.'
+    },
+    footer: {
+      visit: 'Visit us', hours: 'Opening hours', contact: 'Contact', find: 'Find us',
+      days: [['Mon – Sat', '7:00 AM – 8:00 PM'], ['Sunday', '8:00 AM – 2:00 PM']],
+      copy: '© {year} {businessName}. All rights reserved.', made: 'Fresh. Every. Time.'
+    },
+    dots: { hero: 'Services', story: 'Why us', statement: 'Fresh', pricing: 'Pricing', how: 'How it works', faq: 'FAQ', book: 'Book' }
+  },
+  si: {
+    // Sinhala translations go here, using the same structure as "en". Example:
+    // nav: { services: 'සේවා', pricing: 'මිල ගණන්', faq: 'ප්‍රශ්න', book: 'ඇණවුම් කරන්න', lang: 'English' },
+  }
+};
+
+/* =====================================================================
+   3) SITE LOGIC — UI, scroll story, i18n (no need to edit below)
+   ===================================================================== */
+(() => {
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const isTouch = matchMedia('(hover: none)').matches;
+  const $ = (s, el = document) => el.querySelector(s);
+  const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+  const pad = n => String(n).padStart(2, '0');
+  history.scrollRestoration = 'manual';
+
+  // ---------- event bus shared with the 3D module ----------
+  const listeners = {};
+  const SITE = window.SITE = {
+    config: CONFIG, styles: STYLE, content: CONTENT, reduced, isTouch,
+    lang: CONFIG.defaultLang in CONTENT ? CONFIG.defaultLang : 'en',
+    service: 0, active: 'hero', step: 0, glow: STYLE.services[0].glow, st: {}, lenis: null,
+    on(name, fn) { (listeners[name] ||= []).push(fn); },
+    emit(name, data) { (listeners[name] || []).forEach(fn => fn(data)); },
+    progress() {
+      const p = k => (SITE.st[k] ? SITE.st[k].progress : 0);
+      return { hero: p('hero'), story: p('story'), statement: p('statement'), pricing: p('pricing'), book: p('book') };
+    },
+    velocity() { return SITE.lenis ? SITE.lenis.velocity : 0; }
+  };
+
+  // ---------- i18n ----------
+  const get = (obj, path) => path.split('.').reduce((o, k) => (o == null ? undefined : o[k]), obj);
+  const fmt = s => s.replace(/\{(\w+)\}/g, (m, k) => (k === 'year' ? new Date().getFullYear() : (CONFIG[k] ?? m)));
+  const t = SITE.t = path => {
+    let v = get(CONTENT[SITE.lang], path);
+    if (v === undefined || v === '') v = get(CONTENT.en, path);
+    return typeof v === 'string' ? fmt(v) : (v ?? '');
+  };
+  const hasSinhala = Object.keys(CONTENT.si || {}).length > 0;
+
+  // ---------- build repeated DOM from content ----------
+  const en = CONTENT.en;
+  const services = en.services;
+  const check = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg>';
+
+  $('#svcTotal').textContent = pad(services.length);
+  $('#svcSegs').innerHTML = services.map((_, i) => `<button aria-label="Service ${i + 1}" data-i="${i}"></button>`).join('');
+
+  $('#storyPanels').innerHTML = en.story.map((_, i) => `
+    <article class="panel">
+      <span class="tag"><b>${pad(i + 1)}</b><span data-t="story.${i}.tag"></span></span>
+      <h2 data-t="story.${i}.title"></h2>
+      <p data-t="story.${i}.text"></p>
+    </article>`).join('');
+  $('#storyTotal').textContent = pad(en.story.length);
+
+  $('#cards').innerHTML = en.pricing.plans.map((p, i) => `
+    <article class="card glass reveal${p.badge ? ' featured' : ''}">
+      ${p.badge ? `<span class="badge" data-t="pricing.plans.${i}.badge"></span>` : ''}
+      <h3 data-t="pricing.plans.${i}.name"></h3>
+      <p class="desc" data-t="pricing.plans.${i}.desc"></p>
+      <div class="price"><small data-t="pricing.currency"></small><strong>${CONFIG.prices[p.key]}</strong><span data-t="pricing.plans.${i}.unit"></span></div>
+      <ul class="feat">${p.features.map((_, j) => `<li>${check}<span data-t="pricing.plans.${i}.features.${j}"></span></li>`).join('')}</ul>
+      <a href="#book" class="btn" data-plan-service="${p.service}" data-t="pricing.plans.${i}.cta"></a>
+    </article>`).join('');
+
+  const ICONS = [
+    // Book — phone with check
+    `<svg viewBox="0 0 48 48" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect class="draw" style="--len:120" x="13" y="4" width="22" height="40" rx="5"/><path class="draw" style="--len:10" d="M21 39h6"/><path class="draw accent" style="--len:30" d="M18 22l4.5 4.5L31 18"/></svg>`,
+    // Pick up — truck
+    `<svg viewBox="0 0 48 48" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><g class="anim-bob"><path class="draw" style="--len:110" d="M3 12h26v20H3zM29 19h8l7 7v6H29z"/><circle class="draw accent" style="--len:30" cx="12" cy="35" r="4"/><circle class="draw accent" style="--len:30" cx="36" cy="35" r="4"/></g><path class="draw" style="--len:20" d="M2 40h8"/></svg>`,
+    // Clean — washing machine
+    `<svg viewBox="0 0 48 48" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect class="draw" style="--len:150" x="8" y="4" width="32" height="40" rx="5"/><path class="draw" style="--len:40" d="M8 13h32"/><circle class="draw" style="--len:80" cx="24" cy="28" r="10"/><path class="draw accent anim-spin" style="--len:40" d="M17 29c3 2 5 2 7 0s4-2 7 0"/><circle cx="14" cy="8.5" r="1" fill="currentColor"/></svg>`,
+    // Deliver — folded shirt with heart
+    `<svg viewBox="0 0 48 48" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path class="draw" style="--len:150" d="M17 6l-11 6 4 9 4-2v23h20V19l4 2 4-9-11-6c-1 3-4 5-7 5s-6-2-7-5z"/><path class="draw accent anim-bob" style="--len:40" d="M24 34s-6-3.5-6-7.5a3 3 0 0 1 6-1 3 3 0 0 1 6 1c0 4-6 7.5-6 7.5z"/></svg>`
+  ];
+  $('#steps').insertAdjacentHTML('beforeend', en.how.steps.map((_, i) => `
+    <div class="step">
+      <div class="step-icon">${ICONS[i] || ICONS[0]}</div>
+      <div class="step-num">${pad(i + 1)}</div>
+      <h3 data-t="how.steps.${i}.title"></h3>
+      <p data-t="how.steps.${i}.text"></p>
+    </div>`).join(''));
+
+  $('#acc').innerHTML = en.faq.items.map((_, i) => `
+    <div class="acc-item glass reveal">
+      <button class="acc-q" aria-expanded="false" aria-controls="ans${i}" id="q${i}"><span data-t="faq.items.${i}.q"></span><span class="plus" aria-hidden="true"></span></button>
+      <div class="acc-a" id="ans${i}" role="region" aria-labelledby="q${i}"><div><p data-t="faq.items.${i}.a"></p></div></div>
+    </div>`).join('');
+
+  const sections = $$('[data-section]');
+  $('#dots').innerHTML = sections.map(s => `
+    <li><button data-target="${s.id}" aria-label="${s.id}"><span data-t="dots.${s.id}"></span></button>
+    ${s.id === 'story' ? `<div class="sub">${en.story.map((_, i) => `<i data-step="${i}"></i>`).join('')}</div>` : ''}</li>`).join('');
+
+  // ---------- apply text for the current language ----------
+  function renderText() {
+    document.documentElement.lang = SITE.lang;
+    $$('[data-t]').forEach(el => { el.textContent = t(el.dataset.t); });
+    $$('[data-config]').forEach(el => { el.textContent = CONFIG[el.dataset.config]; });
+    document.title = `${CONFIG.businessName} — Premium Laundry in ${CONFIG.city}`;
+    const svcSel = $('#fService'), cur = svcSel.value;
+    svcSel.innerHTML = services.map((_, i) => `<option value="${i}">${t(`services.${i}.name`)}</option>`).join('');
+    if (cur) svcSel.value = cur;
+    const timeSel = $('#fTime'), curT = timeSel.value;
+    timeSel.innerHTML = t('book.slots').map((s, i) => `<option value="${i}">${s}</option>`).join('');
+    if (curT) timeSel.value = curT;
+    $('#hours').innerHTML = t('footer.days').map(([d, h]) => `<li><span>${d}</span><span>${h}</span></li>`).join('');
+    $('#langBtn').textContent = t('nav.lang');
+    updateServiceText(false);
+  }
+
+  // ---------- links from CONFIG ----------
+  const waNumber = CONFIG.whatsapp.replace(/\D/g, '');
+  const waBase = `https://wa.me/${waNumber}`;
+  $('#waBtn').href = waBase;
+  $('#sWhatsapp').href = waBase;
+  $('#sFacebook').href = CONFIG.social.facebook;
+  $('#sInstagram').href = CONFIG.social.instagram;
+  $('#sTiktok').href = CONFIG.social.tiktok;
+  $('#phoneLink').href = 'tel:+' + CONFIG.phone.replace(/\D/g, '');
+  const mapQuery = encodeURIComponent(`${CONFIG.address}, ${CONFIG.city}, Sri Lanka`);
+  $('#map').src = `https://maps.google.com/maps?q=${mapQuery}&z=15&output=embed`;
+
+  // ---------- accent colour (CSS) ----------
+  function setGlow(hex) {
+    if (hex === SITE.glow) return;
+    SITE.glow = hex;
+    if (window.gsap) gsap.to(document.documentElement, { '--accent': hex, duration: reduced ? 0 : 0.9, overwrite: true });
+    else document.documentElement.style.setProperty('--accent', hex);
+  }
+
+  // ---------- hero carousel ----------
+  const nameEl = $('#svcName'), tagEl = $('#svcTag');
+  function updateServiceText(animate) {
+    const i = SITE.service;
+    $('#svcNum').textContent = pad(i + 1);
+    $('#svcFill').style.transform = `scaleX(${(i + 1) / services.length})`;
+    const apply = () => { nameEl.textContent = t(`services.${i}.name`); tagEl.textContent = t(`services.${i}.tagline`); };
+    if (animate && window.gsap && !reduced) {
+      gsap.timeline({ overwrite: true })
+        .to([nameEl, tagEl], { yPercent: -60, autoAlpha: 0, duration: 0.22, ease: 'power2.in' })
+        .add(apply)
+        .fromTo([nameEl, tagEl], { yPercent: 70, autoAlpha: 0 }, { yPercent: 0, autoAlpha: 1, duration: 0.6, ease: 'expo.out', stagger: 0.06 });
+    } else apply();
+  }
+  SITE.setService = (i) => {
+    const n = services.length;
+    i = ((i % n) + n) % n;
+    if (i === SITE.service) return;
+    SITE.service = i;
+    updateServiceText(true);
+    SITE.emit('service', i);
+    if (SITE.active === 'hero') setGlow(STYLE.services[i].glow);
+  };
+  const stepService = d => SITE.setService(SITE.service + d);
+  $('#prevSvc').addEventListener('click', () => stepService(-1));
+  $('#nextSvc').addEventListener('click', () => stepService(1));
+  $('#svcSegs').addEventListener('click', e => { const b = e.target.closest('button'); if (b) SITE.setService(+b.dataset.i); });
+  addEventListener('keydown', e => {
+    if (SITE.active !== 'hero' || e.target.closest('input,textarea,select')) return;
+    if (e.key === 'ArrowRight') { e.preventDefault(); stepService(1); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); stepService(-1); }
+  });
+  // swipe / drag / tap on the 3D area
+  let sx = null, sy = 0;
+  addEventListener('pointerdown', e => {
+    if (SITE.active !== 'hero' || e.target !== $('#webgl')) return;
+    sx = e.clientX; sy = e.clientY;
+  });
+  addEventListener('pointerup', e => {
+    if (sx === null) return;
+    const dx = e.clientX - sx, dy = e.clientY - sy; sx = null;
+    if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.2) stepService(dx < 0 ? 1 : -1);
+    else if (Math.abs(dx) < 8 && Math.abs(dy) < 8) SITE.emit('tap', { x: e.clientX, y: e.clientY });
+  });
+  addEventListener('pointercancel', () => { sx = null; });
+
+  // ---------- FAQ accordion ----------
+  $('#acc').addEventListener('click', e => {
+    const q = e.target.closest('.acc-q'); if (!q) return;
+    const item = q.parentElement, open = !item.classList.contains('open');
+    $$('.acc-item.open').forEach(it => { it.classList.remove('open'); $('.acc-q', it).setAttribute('aria-expanded', 'false'); });
+    if (open) { item.classList.add('open'); q.setAttribute('aria-expanded', 'true'); }
+    setTimeout(() => window.ScrollTrigger && ScrollTrigger.refresh(), 500);
+  });
+
+  // ---------- pricing card tilt ----------
+  $$('.card').forEach(card => {
+    if (isTouch || reduced) return;
+    card.addEventListener('pointerenter', () => card.classList.add('hover'));
+    card.addEventListener('pointermove', e => {
+      const r = card.getBoundingClientRect();
+      const px = (e.clientX - r.left) / r.width, py = (e.clientY - r.top) / r.height;
+      card.style.setProperty('--ry', `${(px - 0.5) * 14}deg`);
+      card.style.setProperty('--rx', `${(0.5 - py) * 12}deg`);
+      card.style.setProperty('--mx', `${px * 100}%`);
+      card.style.setProperty('--my', `${py * 100}%`);
+    });
+    card.addEventListener('pointerleave', () => {
+      card.classList.remove('hover');
+      ['--rx', '--ry'].forEach(p => card.style.setProperty(p, '0deg'));
+    });
+  });
+
+  // ---------- booking form → WhatsApp ----------
+  const form = $('#bookForm');
+  const today = new Date(); today.setMinutes(today.getMinutes() - today.getTimezoneOffset());
+  $('#fDate').min = today.toISOString().slice(0, 10);
+  $('#fDate').value = today.toISOString().slice(0, 10);
+  const toast = (msg) => { const el = $('#toast'); el.textContent = msg; el.classList.add('show'); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove('show'), 3200); };
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    const bad = $$('[required]', form).filter(f => !f.value.trim());
+    $$('[required]', form).forEach(f => f.style.borderColor = '');
+    if (bad.length) { bad.forEach(f => f.style.borderColor = '#ff6b8b'); bad[0].focus(); toast(t('book.invalid')); return; }
+    const d = Object.fromEntries(new FormData(form));
+    const lines = [
+      t('book.message'), '',
+      `${t('book.name')}: ${d.name}`,
+      `${t('book.phone')}: ${d.phone}`,
+      `${t('book.address')}: ${d.address}`,
+      `${t('book.service')}: ${t(`services.${d.service}.name`)}`,
+      `${t('book.date')}: ${d.date}, ${t('book.slots')[d.time]}`,
+      d.notes ? `${t('book.notes')}: ${d.notes}` : ''
+    ].filter(Boolean);
+    toast(t('book.sending'));
+    window.open(`${waBase}?text=${encodeURIComponent(lines.join('\n'))}`, '_blank', 'noopener');
+  });
+  $('#cards').addEventListener('click', e => {
+    const b = e.target.closest('[data-plan-service]'); if (b) $('#fService').value = b.dataset.planService;
+  });
+
+  // ---------- language switch ----------
+  const langBtn = $('#langBtn');
+  if (hasSinhala) {
+    langBtn.hidden = false;
+    langBtn.addEventListener('click', () => { SITE.lang = SITE.lang === 'en' ? 'si' : 'en'; renderText(); SITE.emit('lang', SITE.lang); });
+  }
+
+  // ---------- mobile menu ----------
+  const menu = $('#mobileMenu'), menuBtn = $('#menuBtn');
+  menuBtn.addEventListener('click', () => { const o = menu.classList.toggle('open'); menuBtn.setAttribute('aria-expanded', o); });
+  menu.addEventListener('click', e => { if (e.target.closest('a')) { menu.classList.remove('open'); menuBtn.setAttribute('aria-expanded', 'false'); } });
+
+  if (isTouch) CONTENT.en.hero.hint = 'Swipe or tap a bottle';
+  renderText();
+
+  // ---------- smooth scroll + scroll-driven animation ----------
+  const hasGsap = !!(window.gsap && window.ScrollTrigger);
+  let lenis = null;
+  if (hasGsap) {
+    gsap.registerPlugin(ScrollTrigger);
+    if (!reduced && window.Lenis) {
+      lenis = SITE.lenis = new Lenis({ duration: 1.15, easing: x => Math.min(1, 1.001 - Math.pow(2, -10 * x)), smoothWheel: true });
+      lenis.on('scroll', ScrollTrigger.update);
+      gsap.ticker.add(time => lenis.raf(time * 1000));
+      gsap.ticker.lagSmoothing(0);
+      lenis.stop();
+    }
+
+    SITE.st.hero = ScrollTrigger.create({ trigger: '#hero', start: 'top top', end: 'bottom top' });
+    gsap.to('.hero-info, .hero-top, .scroll-cue', { y: -80, autoAlpha: 0, ease: 'none', scrollTrigger: { trigger: '#hero', start: 'top top', end: '45% top', scrub: true } });
+
+    // story: panels in/out one at a time while pinned
+    const panels = $$('.panel');
+    const tl = gsap.timeline({ defaults: { ease: 'none' } });
+    panels.forEach((p, i) => {
+      const at = i * 2;
+      tl.fromTo(p, { autoAlpha: 0, y: 60, filter: 'blur(8px)' }, { autoAlpha: 1, y: 0, filter: 'blur(0px)', duration: 0.6 }, at);
+      if (i < panels.length - 1) tl.to(p, { autoAlpha: 0, y: -60, filter: 'blur(8px)', duration: 0.6 }, at + 1.4);
+    });
+    tl.to({}, { duration: 0.01 }, panels.length * 2);
+    SITE.st.story = ScrollTrigger.create({
+      trigger: '#story', start: 'top top', end: () => '+=' + innerHeight * 4.5,
+      pin: true, scrub: reduced ? true : 0.6, animation: tl, anticipatePin: 1, invalidateOnRefresh: true,
+      onUpdate: self => {
+        const step = Math.min(panels.length - 1, Math.floor(self.progress * panels.length));
+        $('#storyBar').style.transform = `scaleX(${self.progress})`;
+        $('#storyNum').textContent = pad(step + 1);
+      }
+    });
+
+    SITE.st.statement = ScrollTrigger.create({ trigger: '#statement', start: 'top bottom', end: 'bottom top' });
+    gsap.fromTo('.statement-caption', { y: 120, autoAlpha: 0 }, { y: -40, autoAlpha: 1, ease: 'none', scrollTrigger: { trigger: '#statement', start: 'top 40%', end: 'bottom 70%', scrub: true } });
+    SITE.st.pricing = ScrollTrigger.create({ trigger: '#pricing', start: 'top bottom', end: 'top 15%' });
+
+    // generic reveals, tied to scroll position
+    $$('.reveal').forEach(el => {
+      gsap.fromTo(el, { y: 70, autoAlpha: 0 }, { y: 0, autoAlpha: 1, ease: 'power2.out', scrollTrigger: { trigger: el, start: 'top 95%', end: 'top 70%', scrub: reduced ? true : 0.8 } });
+    });
+
+    // how it works: draw the connecting line, light up steps as it passes
+    const stepsEl = $('#steps'), stepEls = $$('.step');
+    ScrollTrigger.create({
+      trigger: stepsEl, start: 'top 75%', end: 'bottom 55%', scrub: true,
+      onUpdate: self => {
+        stepsEl.style.setProperty('--p', self.progress.toFixed(4));
+        stepEls.forEach((s, i) => s.classList.toggle('on', self.progress > 0.001 && self.progress >= (i / (stepEls.length - 1)) - 0.02));
+      }
+    });
+    stepEls.forEach((s, i) => gsap.fromTo(s, { y: 60, autoAlpha: 0 }, { y: 0, autoAlpha: 1, ease: 'power2.out', scrollTrigger: { trigger: stepsEl, start: `top ${92 - i * 4}%`, end: `top ${70 - i * 4}%`, scrub: true } }));
+
+    SITE.st.book = ScrollTrigger.create({ trigger: '#book', start: 'top bottom', end: 'top 10%' });
+  } else {
+    $$('.panel').forEach((p, i) => { p.style.cssText = `opacity:1;visibility:visible;position:relative;inset:auto;margin-bottom:24px`; });
+    $('#story').style.height = 'auto';
+    $$('.step').forEach(s => s.classList.add('on'));
+  }
+
+  // ---------- active section, glow colour, side dots ----------
+  const dotBtns = $$('#dots button'), subDots = $$('#dots .sub i'), subWrap = $('#dots .sub');
+  function onScroll() {
+    const mid = innerHeight * 0.5;
+    let active = SITE.active;
+    for (const s of sections) { const r = s.getBoundingClientRect(); if (r.top <= mid && r.bottom >= mid) { active = s.id; break; } }
+    const storyP = SITE.st.story ? SITE.st.story.progress : 0;
+    const step = Math.min(en.story.length - 1, Math.floor(storyP * en.story.length));
+    if (active !== SITE.active || step !== SITE.step) {
+      SITE.active = active; SITE.step = step;
+      dotBtns.forEach(b => b.classList.toggle('active', b.dataset.target === active));
+      subWrap && subWrap.classList.toggle('open', active === 'story');
+      subDots.forEach((d, i) => d.classList.toggle('on', active === 'story' && i === step));
+      setGlow(active === 'hero' ? STYLE.services[SITE.service].glow : active === 'story' ? STYLE.story[step] : STYLE.sections[active] || STYLE.services[0].glow);
+      SITE.emit('section', active);
+    }
+  }
+  if (lenis) lenis.on('scroll', onScroll); else addEventListener('scroll', onScroll, { passive: true });
+  if (hasGsap) ScrollTrigger.addEventListener('refresh', onScroll);
+  dotBtns[0] && dotBtns[0].classList.add('active');
+
+  // anchor links + dots → smooth scroll
+  function scrollToId(id) {
+    const el = document.getElementById(id); if (!el) return;
+    if (lenis) lenis.scrollTo(id === 'hero' ? 0 : el, { duration: 1.4 });
+    else el.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth' });
+  }
+  document.addEventListener('click', e => {
+    const a = e.target.closest('a[href^="#"]');
+    if (a && a.getAttribute('href').length > 1) { e.preventDefault(); scrollToId(a.getAttribute('href').slice(1)); }
+    const d = e.target.closest('#dots button');
+    if (d) scrollToId(d.dataset.target);
+    const sd = e.target.closest('#dots .sub i');
+    if (sd && SITE.st.story) {
+      const st = SITE.st.story, y = st.start + (st.end - st.start) * ((+sd.dataset.step + 0.5) / en.story.length);
+      lenis ? lenis.scrollTo(y, { duration: 1.2 }) : scrollTo({ top: y });
+    }
+  });
+
+  // ---------- loader ----------
+  const loader = SITE.loader = { target: 0, shown: 0, finished: false, set(p) { this.target = Math.max(this.target, p); } };
+  const num = $('#loaderNum');
+  function finishLoading() {
+    loader.finished = true;
+    document.documentElement.classList.remove('is-loading');
+    document.documentElement.classList.add('loaded');
+    scrollTo(0, 0);
+    if (lenis) lenis.start();
+    if (hasGsap) ScrollTrigger.refresh();
+    SITE.emit('ready');
+  }
+  (function tick() {
+    // creeps forward on its own so the counter never looks frozen
+    const cap = loader.target >= 100 ? 100 : Math.min(96, Math.max(loader.target, loader.shown + 0.12));
+    loader.shown += (cap - loader.shown) * (reduced ? 1 : 0.12) + (cap > loader.shown ? 0.3 : 0);
+    loader.shown = Math.min(loader.shown, cap);
+    num.textContent = Math.round(loader.shown);
+    if (loader.shown >= 99.5 && loader.target >= 100) { num.textContent = '100'; setTimeout(finishLoading, reduced ? 0 : 250); return; }
+    requestAnimationFrame(tick);
+  })();
+  loader.set(15);
+  (document.fonts ? document.fonts.ready : Promise.resolve()).then(() => loader.set(40));
+  setTimeout(() => loader.set(100), 12000); // never block the site on a slow network
+})();
+</script>
+
+<!-- =====================================================================
+     4) 3D SCENE — Three.js (all objects built procedurally)
+     ===================================================================== -->
+<script type="module">
+const SITE = window.SITE;
+
+async function main() {
+  const THREE = await import('three');
+  const [{ RoomEnvironment }, { RoundedBoxGeometry }, { Reflector }, { EffectComposer }, { RenderPass }, { UnrealBloomPass }, { OutputPass }] = await Promise.all([
+    import('three/addons/environments/RoomEnvironment.js'),
+    import('three/addons/geometries/RoundedBoxGeometry.js'),
+    import('three/addons/objects/Reflector.js'),
+    import('three/addons/postprocessing/EffectComposer.js'),
+    import('three/addons/postprocessing/RenderPass.js'),
+    import('three/addons/postprocessing/UnrealBloomPass.js'),
+    import('three/addons/postprocessing/OutputPass.js')
+  ]);
+  SITE.loader.set(60);
+
+  // ---------- helpers ----------
+  const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+  const lerp = (a, b, k) => a + (b - a) * k;
+  const remap = (v, a, b) => clamp((v - a) / (b - a), 0, 1);
+  const ease = x => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+  const damp = (a, b, l, dt) => lerp(a, b, 1 - Math.exp(-l * dt));
+  const reduced = SITE.reduced;
+  const motion = reduced ? 0.15 : 1;
+  const isSmall = () => innerWidth < 768 || innerWidth / innerHeight < 0.8;
+  const lowPower = isSmall() || (navigator.hardwareConcurrency || 8) <= 4;
+  const fontReady = Promise.race([document.fonts ? document.fonts.load('400 100px Anton') : Promise.resolve(), new Promise(r => setTimeout(r, 2500))]);
+
+  // ---------- renderer / scene / camera ----------
+  const canvas = document.getElementById('webgl');
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance' });
+  renderer.setPixelRatio(Math.min(devicePixelRatio, lowPower ? 1.5 : 2));
+  renderer.setSize(innerWidth, innerHeight, false);
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.05;
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(35, innerWidth / innerHeight, 0.1, 100);
+  const CAM = new THREE.Vector3(0, 0.6, 9);
+  camera.position.copy(CAM);
+  camera.lookAt(0, 0, 0);
+
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+
+  const composer = new EffectComposer(renderer, new THREE.WebGLRenderTarget(innerWidth, innerHeight, { type: THREE.HalfFloatType, samples: lowPower ? 0 : 4 }));
+  composer.addPass(new RenderPass(scene, camera));
+  const bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 0.42, 0.6, 0.9);
+  composer.addPass(bloom);
+  composer.addPass(new OutputPass());
+
+  // ---------- background glow (full-screen gradient behind everything) ----------
+  const glow = new THREE.Color(SITE.glow);
+  const glowTarget = new THREE.Color(SITE.glow);
+  const bgMat = new THREE.ShaderMaterial({
+    uniforms: {
+      uColor: { value: glow }, uBase: { value: new THREE.Color('#0a0a0f') },
+      uCenter: { value: new THREE.Vector2(0.5, 0.56) }, uAspect: { value: innerWidth / innerHeight }, uTime: { value: 0 }
+    },
+    vertexShader: `varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.9999, 1.0); }`,
+    fragmentShader: `
+      uniform vec3 uColor; uniform vec3 uBase; uniform vec2 uCenter; uniform float uAspect; uniform float uTime; varying vec2 vUv;
+      float hash(vec2 p){ return fract(sin(dot(p, vec2(12.9898,78.233))) * 43758.5453); }
+      void main(){
+        vec2 p = (vUv - uCenter) * vec2(uAspect, 1.0);
+        float d2 = dot(p, p);
+        float g = exp(-d2 * 5.0) * 0.30 + exp(-d2 * 18.0) * 0.26;
+        vec2 q = (vUv - uCenter - vec2(0.22 * sin(uTime * 0.13), -0.18 + 0.05 * cos(uTime * 0.17))) * vec2(uAspect, 1.0);
+        g += exp(-dot(q, q) * 7.0) * 0.05;
+        vec3 col = uBase + uColor * g * 0.32;
+        col *= mix(0.6, 1.0, smoothstep(1.5, 0.25, length((vUv - 0.5) * vec2(uAspect, 1.0))));
+        col += (hash(vUv * 917.0 + fract(uTime)) - 0.5) * 0.0035;
+        gl_FragColor = vec4(col, 1.0);
+      }`,
+    depthWrite: false, depthTest: false
+  });
+  const bg = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), bgMat);
+  bg.frustumCulled = false; bg.renderOrder = -1000;
+  scene.add(bg);
+
+  // ---------- lights ----------
+  scene.add(new THREE.HemisphereLight(0xcfe0ff, 0x0a0a0f, 0.35));
+  const key = new THREE.DirectionalLight(0xffffff, 1.5); key.position.set(4, 6, 6); scene.add(key);
+  const rim = new THREE.DirectionalLight(glow, 2.4); rim.position.set(-5, 3, -4); scene.add(rim);
+  const rim2 = new THREE.DirectionalLight(glow, 1.6); rim2.position.set(6, 1, -2); scene.add(rim2);
+  const fill = new THREE.PointLight(glow, 5, 7, 2); fill.position.set(0, -0.4, 2.2); scene.add(fill);
+
+  const glossy = (color, o = {}) => new THREE.MeshPhysicalMaterial({ color, roughness: 0.2, metalness: 0, clearcoat: 1, clearcoatRoughness: 0.05, envMapIntensity: 0.9, ...o });
+  const chrome = new THREE.MeshPhysicalMaterial({ color: '#e3e7ee', metalness: 1, roughness: 0.14, clearcoat: 0.6, envMapIntensity: 1.3 });
+  const additive = (frag, extra = {}) => new THREE.ShaderMaterial({
+    uniforms: { uColor: { value: new THREE.Color() }, uOpacity: { value: 1 }, ...extra },
+    vertexShader: `varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+    fragmentShader: frag, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide
+  });
+  function roundRect(g, x, y, w, h, r) { g.beginPath(); if (g.roundRect) g.roundRect(x, y, w, h, r); else g.rect(x, y, w, h); }
+
+  // =====================================================================
+  //  HERO: carousel of glossy detergent bottles + pedestal + floor
+  // =====================================================================
+  const hero = new THREE.Group(); scene.add(hero);
+  const carousel = new THREE.Group(); hero.add(carousel);
+  const svcStyle = SITE.styles.services;
+  const N = svcStyle.length;
+
+  const profile = [[0, -0.82], [0.3, -0.82], [0.4, -0.795], [0.443, -0.72], [0.45, -0.55], [0.45, 0.2], [0.44, 0.31], [0.4, 0.42], [0.32, 0.52], [0.23, 0.595], [0.175, 0.645], [0.168, 0.74], [0, 0.74]]
+    .map(([x, y]) => new THREE.Vector2(x, y));
+  const bottleGeo = new THREE.LatheGeometry(profile, 64);
+  const capGeo = new THREE.CylinderGeometry(0.19, 0.2, 0.26, 48);
+  const capRingGeo = new THREE.TorusGeometry(0.2, 0.018, 10, 48);
+  const spoutGeo = new THREE.CylinderGeometry(0.06, 0.085, 0.14, 32);
+  const labelGeo = new THREE.CylinderGeometry(0.458, 0.458, 0.6, 48, 1, true, -1.15, 2.3);
+
+  function labelTexture(i) {
+    const c = document.createElement('canvas'); c.width = 720; c.height = 400;
+    const g = c.getContext('2d');
+    const col = svcStyle[i].color === '#eef2f8' ? svcStyle[i].cap : svcStyle[i].color;
+    g.fillStyle = 'rgba(255,255,255,0.95)'; roundRect(g, 12, 12, 696, 376, 46); g.fill();
+    g.fillStyle = col; roundRect(g, 12, 12, 696, 62, [46, 46, 0, 0]); g.fill();
+    g.fillStyle = '#fff'; g.font = '600 28px Inter, sans-serif'; g.textBaseline = 'middle';
+    g.fillText(String(i + 1).padStart(2, '0') + ' / ' + String(N).padStart(2, '0'), 44, 44);
+    g.textAlign = 'right'; g.fillText('PREMIUM CARE', 676, 44);
+    g.textAlign = 'center'; g.fillStyle = '#12131a';
+    const words = String(SITE.t(`services.${i}.short`)).toUpperCase().split(' ');
+    const lines = []; let line = '';
+    g.font = '400 110px Anton, Impact, sans-serif';
+    words.forEach(w => { const test = line ? line + ' ' + w : w; if (g.measureText(test).width > 620 && line) { lines.push(line); line = w; } else line = test; });
+    lines.push(line);
+    const size = lines.length > 1 ? 96 : 120;
+    g.font = `400 ${size}px Anton, Impact, sans-serif`;
+    lines.forEach((l, k) => g.fillText(l, 360, 215 + (k - (lines.length - 1) / 2) * size * 0.98));
+    g.font = '600 24px Inter, sans-serif'; g.fillStyle = 'rgba(18,19,26,0.55)';
+    g.fillText(String(SITE.config.businessName).toUpperCase(), 360, 348);
+    const tex = new THREE.CanvasTexture(c);
+    tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 8;
+    return tex;
+  }
+
+  const bottles = svcStyle.map((s, i) => {
+    const grp = new THREE.Group();
+    const bodyMat = glossy(s.color, { roughness: 0.16 });
+    const capMat = glossy(s.cap, { roughness: 0.28 });
+    const labelMat = new THREE.MeshPhysicalMaterial({ map: labelTexture(i), transparent: true, roughness: 0.32, clearcoat: 0.8, envMapIntensity: 0.5 });
+    const body = new THREE.Mesh(bottleGeo, bodyMat);
+    const cap = new THREE.Mesh(capGeo, capMat); cap.position.y = 0.86;
+    const ring = new THREE.Mesh(capRingGeo, chrome); ring.rotation.x = Math.PI / 2; ring.position.y = 0.74;
+    const spout = new THREE.Mesh(spoutGeo, capMat); spout.position.y = 1.06;
+    const label = new THREE.Mesh(labelGeo, labelMat); label.position.y = -0.17;
+    grp.add(body, cap, ring, spout, label);
+    grp.traverse(o => { o.userData.index = i; });
+    grp.userData = { index: i, bodyMat, capMat, labelMat, base: new THREE.Color(s.color), capBase: new THREE.Color(s.cap) };
+    carousel.add(grp);
+    return grp;
+  });
+  SITE.on('lang', () => bottles.forEach((b, i) => { const m = b.userData.labelMat; m.map.dispose(); m.map = labelTexture(i); }));
+  fontReady.then(() => bottles.forEach((b, i) => { const m = b.userData.labelMat; m.map.dispose(); m.map = labelTexture(i); }));
+
+  // pedestal
+  const PED_TOP = -0.78;
+  const pedestal = new THREE.Group(); pedestal.position.y = PED_TOP; hero.add(pedestal);
+  const pedBody = new THREE.Mesh(new THREE.CylinderGeometry(1.0, 1.08, 0.24, 72), glossy('#121219', { roughness: 0.12, metalness: 0.35 }));
+  pedBody.position.y = -0.12;
+  const pedRingMat = new THREE.MeshBasicMaterial({ color: glow });
+  const pedRing = new THREE.Mesh(new THREE.TorusGeometry(0.985, 0.016, 12, 128), pedRingMat); pedRing.rotation.x = Math.PI / 2; pedRing.position.y = 0.002;
+  const pedRing2 = new THREE.Mesh(new THREE.TorusGeometry(1.075, 0.01, 8, 128), pedRingMat); pedRing2.rotation.x = Math.PI / 2; pedRing2.position.y = -0.235;
+  const poolMat = additive(`uniform vec3 uColor; uniform float uOpacity; varying vec2 vUv;
+    void main(){ float d = length(vUv - 0.5) * 2.0; float a = pow(clamp(1.0 - d, 0.0, 1.0), 1.6) * 0.55; gl_FragColor = vec4(uColor * a * uOpacity, 1.0); }`);
+  const pool = new THREE.Mesh(new THREE.CircleGeometry(0.98, 64), poolMat); pool.rotation.x = -Math.PI / 2; pool.position.y = 0.004;
+  const beamMat = additive(`uniform vec3 uColor; uniform float uOpacity; varying vec2 vUv;
+    void main(){ float a = pow(1.0 - vUv.y, 3.2) * 0.07; gl_FragColor = vec4(uColor * a * uOpacity, 1.0); }`);
+  const beamGeo = new THREE.CylinderGeometry(0.96, 0.96, 2.4, 64, 1, true); beamGeo.translate(0, 1.2, 0);
+  const beam = new THREE.Mesh(beamGeo, beamMat);
+  pedestal.add(pedBody, pedRing, pedRing2, pool, beam);
+
+  // subtle reflective floor (desktop) / soft shadow disc (mobile)
+  const FLOOR_Y = PED_TOP - 0.24;
+  let floor, floorMat;
+  if (!lowPower) {
+    floor = new Reflector(new THREE.CircleGeometry(7, 64), {
+      textureWidth: Math.round(innerWidth * 0.5), textureHeight: Math.round(innerHeight * 0.5), clipBias: 0.003,
+      shader: {
+        uniforms: { color: { value: null }, tDiffuse: { value: null }, textureMatrix: { value: null }, uOpacity: { value: 1 } },
+        vertexShader: `uniform mat4 textureMatrix; varying vec4 vUv; varying vec2 vLocal;
+          void main(){ vUv = textureMatrix * vec4(position, 1.0); vLocal = position.xy; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+        fragmentShader: `uniform vec3 color; uniform sampler2D tDiffuse; uniform float uOpacity; varying vec4 vUv; varying vec2 vLocal;
+          void main(){
+            vec4 base = texture2DProj(tDiffuse, vUv);
+            float d = length(vLocal) / 7.0;
+            float fade = 1.0 - smoothstep(0.08, 0.75, d);
+            gl_FragColor = vec4(base.rgb * 0.5 + color, fade * 0.5 * uOpacity);
+          }`
+      },
+      color: 0x050507
+    });
+    floorMat = floor.material; floorMat.transparent = true; floorMat.depthWrite = false;
+  } else {
+    floorMat = new THREE.ShaderMaterial({
+      uniforms: { uOpacity: { value: 1 } }, transparent: true, depthWrite: false,
+      vertexShader: `varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }`,
+      fragmentShader: `uniform float uOpacity; varying vec2 vUv; void main(){ float d = length(vUv-0.5)*2.0; gl_FragColor = vec4(0.0,0.0,0.0, (1.0-smoothstep(0.1,1.0,d))*0.55*uOpacity); }`
+    });
+    floor = new THREE.Mesh(new THREE.CircleGeometry(3, 48), floorMat);
+  }
+  floor.rotation.x = -Math.PI / 2; floor.position.y = FLOOR_Y;
+  hero.add(floor);
+
+  // carousel spring state
+  const car = { pos: 0 };
+  SITE.on('service', i => {
+    const base = Math.round(car.pos), curIdx = ((base % N) + N) % N;
+    let delta = i - curIdx; if (delta > N / 2) delta -= N; if (delta < -N / 2) delta += N;
+    window.gsap
+      ? gsap.to(car, { pos: base + delta, duration: reduced ? 0.3 : 1.25, ease: reduced ? 'power2.out' : 'elastic.out(1, 0.72)', overwrite: true })
+      : (car.pos = base + delta);
+  });
+
+  // =====================================================================
+  //  WASHING MACHINE
+  // =====================================================================
+  const machine = new THREE.Group(); scene.add(machine);
+  const mInner = new THREE.Group(); machine.add(mInner);
+  const W = 2.0, H = 2.4, D = 1.7, R = 0.22, HY = -0.12, HR = 0.68, FZ = D / 2 + 0.06;
+  {
+    const s = new THREE.Shape(), x0 = -W / 2, y0 = -H / 2;
+    s.moveTo(x0 + R, y0); s.lineTo(x0 + W - R, y0); s.quadraticCurveTo(x0 + W, y0, x0 + W, y0 + R);
+    s.lineTo(x0 + W, y0 + H - R); s.quadraticCurveTo(x0 + W, y0 + H, x0 + W - R, y0 + H);
+    s.lineTo(x0 + R, y0 + H); s.quadraticCurveTo(x0, y0 + H, x0, y0 + H - R);
+    s.lineTo(x0, y0 + R); s.quadraticCurveTo(x0, y0, x0 + R, y0);
+    const hole = new THREE.Path(); hole.absarc(0, HY, HR, 0, Math.PI * 2, true); s.holes.push(hole);
+    const geo = new THREE.ExtrudeGeometry(s, { depth: D, bevelEnabled: true, bevelThickness: 0.06, bevelSize: 0.05, bevelSegments: 6, curveSegments: 56 });
+    geo.translate(0, 0, -D / 2);
+    mInner.add(new THREE.Mesh(geo, glossy('#c9ced6', { roughness: 0.3, clearcoatRoughness: 0.08, envMapIntensity: 0.5 })));
+  }
+  // drum (perforated steel)
+  function drumTexture() {
+    const c = document.createElement('canvas'); c.width = 256; c.height = 128; const g = c.getContext('2d');
+    const gr = g.createLinearGradient(0, 0, 0, 128); gr.addColorStop(0, '#c7ced6'); gr.addColorStop(1, '#8f98a3');
+    g.fillStyle = gr; g.fillRect(0, 0, 256, 128);
+    for (let y = 0; y < 4; y++) for (let x = 0; x < 8; x++) {
+      const cx = x * 32 + 16 + (y % 2) * 16, cy = y * 32 + 16;
+      g.fillStyle = '#2a2f37'; g.beginPath(); g.arc(cx % 256, cy, 5.5, 0, Math.PI * 2); g.fill();
+      g.fillStyle = 'rgba(255,255,255,0.35)'; g.beginPath(); g.arc(cx % 256 + 1, cy + 2, 5.5, 0, Math.PI); g.fill();
+    }
+    const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; return t;
+  }
+  const dTex = drumTexture(); dTex.repeat.set(9, 3);
+  const bTex = drumTexture(); bTex.repeat.set(4, 4);
+  const rotor = new THREE.Group(); rotor.position.set(0, HY, 0); mInner.add(rotor);
+  const drum = new THREE.Mesh(new THREE.CylinderGeometry(0.66, 0.66, 1.55, 56, 1, true), new THREE.MeshStandardMaterial({ color: '#cdd4dc', map: dTex, metalness: 0.85, roughness: 0.32, side: THREE.BackSide }));
+  drum.rotation.x = Math.PI / 2; drum.position.z = -0.02;
+  const drumBack = new THREE.Mesh(new THREE.CircleGeometry(0.66, 56), new THREE.MeshStandardMaterial({ color: '#a7b0ba', map: bTex, metalness: 0.85, roughness: 0.35 }));
+  drumBack.position.z = -0.79;
+  rotor.add(drum, drumBack);
+  const paddleGeo = new RoundedBoxGeometry(0.13, 0.1, 1.3, 2, 0.03);
+  for (let k = 0; k < 3; k++) { const a = (k / 3) * Math.PI * 2, p = new THREE.Mesh(paddleGeo, chrome); p.position.set(Math.cos(a) * 0.6, Math.sin(a) * 0.6, -0.05); p.rotation.z = a; rotor.add(p); }
+  const gasket = new THREE.Mesh(new THREE.TorusGeometry(0.665, 0.05, 16, 64), new THREE.MeshPhysicalMaterial({ color: '#1a1c22', roughness: 0.55, clearcoat: 0.3 }));
+  gasket.position.set(0, HY, 0.8); mInner.add(gasket);
+
+  // water (shader discs with an animated, sloshing surface line)
+  const waterMats = [];
+  function makeWater(z, phase, opacity) {
+    const m = new THREE.ShaderMaterial({
+      uniforms: { uTime: { value: 0 }, uTilt: { value: 0 }, uLevel: { value: -0.12 }, uColor: { value: new THREE.Color('#2fd6ff') }, uDeep: { value: new THREE.Color('#0b4f9e') }, uPhase: { value: phase }, uOpacity: { value: opacity } },
+      vertexShader: `varying vec2 vP; void main(){ vP = position.xy; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+      fragmentShader: `uniform float uTime, uTilt, uLevel, uPhase, uOpacity; uniform vec3 uColor, uDeep; varying vec2 vP;
+        void main(){
+          float s = uLevel + uTilt * vP.x + sin(vP.x * 9.0 + uTime * 3.2 + uPhase) * 0.03 + sin(vP.x * 17.0 - uTime * 4.1 + uPhase) * 0.012;
+          float d = s - vP.y;
+          if (d < 0.0) discard;
+          vec3 c = mix(uColor, uDeep, smoothstep(0.0, 0.55, d));
+          float foam = smoothstep(0.045, 0.0, d);
+          c += vec3(0.9) * foam;
+          float bub = step(0.985, fract(sin(dot(floor(vP * 40.0 + vec2(0.0, uTime * 2.0)), vec2(12.9, 78.2))) * 43758.5));
+          c += bub * 0.5;
+          gl_FragColor = vec4(c * 1.2, (0.5 + foam * 0.45) * uOpacity);
+        }`,
+      transparent: true, depthWrite: false
+    });
+    waterMats.push(m);
+    const w = new THREE.Mesh(new THREE.CircleGeometry(0.645, 64), m); w.position.set(0, HY, z); mInner.add(w);
+  }
+  makeWater(-0.35, 1.7, 0.85);
+  makeWater(0.62, 0.0, 0.75);
+
+  // clothes tumbling inside the drum
+  const tumble = ['#ff8fc8', '#a58bff', '#ffffff', '#6dd8ff'].map((c, i) => {
+    const m = new THREE.Mesh(new THREE.IcosahedronGeometry(0.17, 1), new THREE.MeshPhysicalMaterial({ color: c, roughness: 0.8, sheen: 1, sheenColor: new THREE.Color('#ffffff') }));
+    m.scale.set(1.5, 0.55, 1.1); m.position.z = 0.1 + i * 0.12; mInner.add(m); return m;
+  });
+
+  // door
+  const door = new THREE.Group(); door.position.set(0, HY, FZ); mInner.add(door);
+  const dRing = new THREE.Mesh(new THREE.TorusGeometry(0.77, 0.085, 24, 96), chrome); dRing.position.z = 0.07;
+  const dInner = new THREE.Mesh(new THREE.TorusGeometry(0.7, 0.032, 12, 96), new THREE.MeshPhysicalMaterial({ color: '#2a2e36', metalness: 0.5, roughness: 0.3, clearcoat: 1 })); dInner.position.z = 0.1;
+  const glass = new THREE.Mesh(new THREE.CircleGeometry(0.71, 64), new THREE.MeshPhysicalMaterial({ color: '#dff2ff', roughness: 0.02, transparent: true, opacity: 0.16, clearcoat: 1, envMapIntensity: 2.4, depthWrite: false }));
+  glass.position.z = 0.09;
+  const glint = new THREE.Mesh(new THREE.TorusGeometry(0.56, 0.012, 8, 48, 1.1), new THREE.MeshBasicMaterial({ color: new THREE.Color(1.6, 1.6, 1.6), transparent: true, opacity: 0.55 }));
+  glint.position.z = 0.11; glint.rotation.z = 1.75;
+  const hinge = new THREE.Mesh(new RoundedBoxGeometry(0.14, 0.38, 0.1, 2, 0.03), chrome); hinge.position.set(-0.86, 0, 0.03);
+  door.add(dRing, dInner, glass, glint, hinge);
+
+  // control panel
+  const panel = new THREE.Mesh(new RoundedBoxGeometry(1.84, 0.32, 0.06, 2, 0.025), glossy('#14161d', { roughness: 0.1 }));
+  panel.position.set(0, 0.86, FZ - 0.01); mInner.add(panel);
+  const lcdC = document.createElement('canvas'); lcdC.width = 256; lcdC.height = 96;
+  { const g = lcdC.getContext('2d'); g.fillStyle = '#05070b'; g.fillRect(0, 0, 256, 96); g.fillStyle = '#8ff3ff'; g.font = '400 64px Anton, Impact, sans-serif'; g.textBaseline = 'middle'; g.fillText('0:45', 18, 50); g.font = '600 18px Inter, sans-serif'; g.fillText('ECO 40°', 160, 34); g.fillText('1400', 168, 64); }
+  const lcdTex = new THREE.CanvasTexture(lcdC); lcdTex.colorSpace = THREE.SRGBColorSpace;
+  const lcd = new THREE.Mesh(new THREE.PlaneGeometry(0.5, 0.19), new THREE.MeshBasicMaterial({ map: lcdTex, color: new THREE.Color(1.5, 1.5, 1.5) }));
+  lcd.position.set(0.48, 0.86, FZ + 0.025); mInner.add(lcd);
+  const knob = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.125, 0.08, 48), chrome); knob.rotation.x = Math.PI / 2; knob.position.set(-0.6, 0.86, FZ + 0.04); mInner.add(knob);
+  const btnMat = new THREE.MeshBasicMaterial({ color: glow });
+  [-0.24, -0.08, 0.08].forEach(x => { const b = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.03, 20), btnMat); b.rotation.x = Math.PI / 2; b.position.set(x, 0.86, FZ + 0.035); mInner.add(b); });
+  const footGeo = new THREE.CylinderGeometry(0.07, 0.08, 0.08, 20), footMat = new THREE.MeshStandardMaterial({ color: '#1a1c22', roughness: 0.6 });
+  [[-0.75, -0.6], [0.75, -0.6], [-0.75, 0.6], [0.75, 0.6]].forEach(([x, z]) => { const f = new THREE.Mesh(footGeo, footMat); f.position.set(x, -H / 2 - 0.09, z); mInner.add(f); });
+
+  // =====================================================================
+  //  BUBBLES (instanced, iridescent fresnel shader)
+  // =====================================================================
+  const bubbleMat = new THREE.ShaderMaterial({
+    uniforms: { uTime: { value: 0 }, uOpacity: { value: 1 } },
+    vertexShader: `attribute float aSeed; varying vec3 vN; varying vec3 vV; varying float vSeed;
+      void main(){
+        vec4 wp = modelMatrix * instanceMatrix * vec4(position, 1.0);
+        vN = normalize(mat3(modelMatrix) * mat3(instanceMatrix) * normal);
+        vV = normalize(cameraPosition - wp.xyz); vSeed = aSeed;
+        gl_Position = projectionMatrix * viewMatrix * wp;
+      }`,
+    fragmentShader: `uniform float uTime; uniform float uOpacity; varying vec3 vN; varying vec3 vV; varying float vSeed;
+      void main(){
+        vec3 n = normalize(vN), v = normalize(vV);
+        float ndv = clamp(dot(n, v), 0.0, 1.0);
+        float fr = pow(1.0 - ndv, 2.4);
+        vec3 rainbow = 0.5 + 0.5 * cos(6.2831 * (vec3(0.0, 0.33, 0.67) + fr * 1.3 + vSeed + uTime * 0.04));
+        vec3 h1 = normalize(normalize(vec3(0.5, 0.9, 0.7)) + v);
+        vec3 h2 = normalize(normalize(vec3(-0.6, -0.3, 0.6)) + v);
+        float spec = pow(max(dot(n, h1), 0.0), 90.0) * 1.8 + pow(max(dot(n, h2), 0.0), 30.0) * 0.25;
+        vec3 col = rainbow * fr * 0.85 + vec3(spec) + rainbow * 0.035;
+        gl_FragColor = vec4(col * uOpacity, 1.0);
+      }`,
+    transparent: true, depthWrite: false, blending: THREE.AdditiveBlending
+  });
+  function makeBubbleMesh(count, detail) {
+    const geo = new THREE.SphereGeometry(1, detail, Math.round(detail * 0.7));
+    const seeds = new Float32Array(count); for (let i = 0; i < count; i++) seeds[i] = Math.random();
+    geo.setAttribute('aSeed', new THREE.InstancedBufferAttribute(seeds, 1));
+    const mesh = new THREE.InstancedMesh(geo, bubbleMat, count);
+    mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage); mesh.frustumCulled = false;
+    return mesh;
+  }
+  const BCOUNT = reduced ? 40 : isSmall() ? 48 : 140;
+  const bubbles = makeBubbleMesh(BCOUNT, lowPower ? 16 : 24); scene.add(bubbles);
+  const bData = Array.from({ length: BCOUNT }, () => ({
+    u: Math.random() * 2 - 1, y: Math.random() * 2 - 1, z: lerp(-6, 3, Math.random()),
+    sp: lerp(0.05, 0.14, Math.random()), ph: Math.random() * 6.28, w: lerp(0.4, 1.1, Math.random()),
+    s: 0.025 + Math.pow(Math.random(), 3.5) * 0.17
+  }));
+  // bubbles pouring out of the machine door (machine-local space)
+  const MB = reduced ? 12 : isSmall() ? 26 : 60;
+  const mBubbles = makeBubbleMesh(MB, 16); machine.add(mBubbles);
+  const mbData = Array.from({ length: MB }, () => ({ life: Math.random() * 3, max: 1, p: new THREE.Vector3(), v: new THREE.Vector3(), s: 0, on: false }));
+  function spawnMB(b) {
+    b.max = lerp(2.2, 3.6, Math.random()); b.life = 0;
+    const a = Math.random() * 6.28, r = Math.random() * 0.55;
+    b.p.set(Math.cos(a) * r, HY + Math.sin(a) * r, FZ + 0.15);
+    b.v.set(lerp(-0.45, 0.45, Math.random()), lerp(0.25, 0.75, Math.random()), lerp(0.35, 0.9, Math.random()));
+    b.s = lerp(0.04, 0.14, Math.random());
+  }
+
+  // =====================================================================
+  //  FOLDED CLOTHES (float around the machine → neat stack)
+  // =====================================================================
+  const clothes = new THREE.Group(); scene.add(clothes);
+  const slabGeo = new RoundedBoxGeometry(0.95, 0.14, 0.72, 3, 0.06);
+  const flapGeo = new RoundedBoxGeometry(0.9, 0.06, 0.38, 2, 0.03);
+  const clothItems = ['#f6f7fb', '#9fd8ff', '#ffc0dc', '#c8b8ff', '#bff5dd'].map(c => {
+    const mat = new THREE.MeshPhysicalMaterial({ color: c, roughness: 0.85, sheen: 0.6, sheenRoughness: 0.6, sheenColor: new THREE.Color('#ffffff'), envMapIntensity: 0.35 });
+    const g = new THREE.Group();
+    const a = new THREE.Mesh(slabGeo, mat); const b = new THREE.Mesh(flapGeo, mat); b.position.set(0, 0.09, -0.14);
+    g.add(a, b); clothes.add(g); return g;
+  });
+
+  // =====================================================================
+  //  BIG STATEMENT TEXT (in 3D so the machine passes in front of it)
+  // =====================================================================
+  const textRows = [];
+  async function buildStatement() {
+    await fontReady;
+    const txt = String(SITE.t('statement.line')).toUpperCase();
+    [false, true].forEach(outline => {
+      const c = document.createElement('canvas'), g = c.getContext('2d');
+      g.font = '400 300px Anton, Impact, sans-serif';
+      const w = Math.ceil(g.measureText(txt).width) + 80;
+      c.width = Math.min(4096, w); c.height = 380;
+      const sc = c.width / w;
+      g.scale(sc, 1);
+      g.font = '400 300px Anton, Impact, sans-serif'; g.textBaseline = 'middle'; g.textAlign = 'center';
+      if (outline) { g.lineWidth = 5; g.strokeStyle = '#fff'; g.strokeText(txt, w / 2, 196); }
+      else { g.fillStyle = '#fff'; g.fillText(txt, w / 2, 196); }
+      const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 8;
+      const m = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false, opacity: 0, color: new THREE.Color(0.9, 0.9, 0.92) }));
+      m.userData.ratio = c.height / (c.width / sc);
+      m.position.z = -2.6; m.visible = false; scene.add(m); textRows.push(m);
+    });
+  }
+  buildStatement();
+
+  // =====================================================================
+  //  INTERACTION: tap a bottle, hover cursor, mouse parallax
+  // =====================================================================
+  const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
+  function pick(x, y) {
+    ndc.set((x / innerWidth) * 2 - 1, -(y / innerHeight) * 2 + 1);
+    ray.setFromCamera(ndc, camera);
+    const hit = ray.intersectObjects(bottles, true)[0];
+    return hit ? hit.object.userData.index : -1;
+  }
+  SITE.on('tap', ({ x, y }) => { if (heroVis > 0.5) { const i = pick(x, y); if (i >= 0) SITE.setService(i); } });
+  const mouse = { x: 0, y: 0, sx: 0, sy: 0 };
+  let hoverT = 0;
+  addEventListener('pointermove', e => {
+    if (e.pointerType !== 'mouse') return;
+    mouse.x = (e.clientX / innerWidth) * 2 - 1; mouse.y = (e.clientY / innerHeight) * 2 - 1;
+    const now = performance.now();
+    if (now - hoverT > 80) { hoverT = now; document.body.classList.toggle('hover-bottle', heroVis > 0.5 && e.target === canvas && pick(e.clientX, e.clientY) >= 0); }
+  }, { passive: true });
+
+  // =====================================================================
+  //  LAYOUT + PER-FRAME UPDATE
+  // =====================================================================
+  let aspect = innerWidth / innerHeight, halfH = 1, halfW = 1, S = 1, small = isSmall();
+  function layout() {
+    aspect = innerWidth / innerHeight; small = isSmall();
+    halfH = CAM.length() * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+    halfW = halfH * aspect;
+    S = small ? clamp(halfW / 2.2, 0.45, 0.85) : clamp(halfW / 5.0, 0.62, 1.0);
+  }
+  layout();
+  function resize() {
+    const w = innerWidth, h = innerHeight;
+    camera.aspect = w / h; camera.updateProjectionMatrix();
+    renderer.setSize(w, h, false); composer.setSize(w, h);
+    bgMat.uniforms.uAspect.value = w / h;
+    layout();
+  }
+  addEventListener('resize', resize);
+
+  const M = { x: 0, y: -6, z: 0, s: 0.3, rx: 0, ry: 0, rz: 0 };           // smoothed machine state
+  const mix = (a, b, k) => { const o = {}; for (const key in a) o[key] = lerp(a[key], b[key], k); return o; };
+  const tmpV = new THREE.Vector3(), tmpC = new THREE.Color(), colorCache = {};
+  const colorOf = hex => (colorCache[hex] ||= new THREE.Color(hex));
+  const mtx = new THREE.Matrix4();
+  const clock = new THREE.Clock();
+  let t = 0, heroVis = 1, drumA = 0;
+
+  function frame() {
+    const dt = Math.min(clock.getDelta(), 0.05);
+    t += dt;
+    const P = SITE.progress();
+    const vel = clamp(Math.abs(SITE.velocity() || 0), 0, 80);
+
+    // ---- glow colour (blends smoothly between sections) ----
+    glowTarget.copy(colorOf(SITE.glow));
+    glow.lerp(glowTarget, 1 - Math.exp(-3.2 * dt));
+    rim.color.copy(glow); rim2.color.copy(glow); fill.color.copy(glow);
+    bgMat.uniforms.uTime.value = t;
+
+    // ---- HERO ----
+    heroVis = 1 - ease(remap(P.hero, 0.04, 0.55));
+    hero.visible = heroVis > 0.002;
+    hero.scale.setScalar(S);
+    hero.position.y = (small ? 0.18 : 0.3) + P.hero * 2.6;
+    if (hero.visible) {
+      bottles.forEach((b, i) => {
+        let d = i - car.pos; d = (((d % N) + N * 1.5) % N) - N / 2;
+        const ad = Math.abs(d), focus = 1 - Math.min(ad, 1);
+        const arc = 0.52, Rr = 3.6 * (1 + P.hero * 0.8);
+        const sc = (0.6 + 0.55 * focus) * (1 - ease(remap(ad, 2.2, 2.95))) * (0.4 + 0.6 * heroVis);
+        const centerY = PED_TOP + 0.82 * sc + 0.16;
+        const bob = Math.sin(t * 1.2 + i * 1.3) * 0.06 * motion;
+        b.position.set(Math.sin(d * arc) * Rr, lerp(0.22, centerY, focus) + bob, (Math.cos(d * arc) - 1) * Rr * 0.9);
+        b.scale.setScalar(Math.max(sc, 0.0001));
+        b.rotation.set(Math.sin(t * 0.7 + i) * 0.04 * motion, -d * 0.3 + Math.sin(t * 0.5 + i * 1.7) * 0.38 * motion, Math.sin(t * 0.8 + i * 2.0) * 0.05 * motion);
+        const dim = 0.32 + 0.68 * focus;
+        const u = b.userData;
+        u.bodyMat.color.copy(u.base).multiplyScalar(dim); u.capMat.color.copy(u.capBase).multiplyScalar(dim);
+        u.labelMat.color.setScalar(dim);
+        u.bodyMat.envMapIntensity = 0.25 + 0.75 * dim;
+      });
+      pedestal.position.y = PED_TOP - (1 - heroVis) * 1.2;
+      pedRingMat.color.copy(glow).multiplyScalar(3.2);
+      poolMat.uniforms.uColor.value.copy(glow); beamMat.uniforms.uColor.value.copy(glow);
+      poolMat.uniforms.uOpacity.value = beamMat.uniforms.uOpacity.value = heroVis;
+      floorMat.uniforms.uOpacity.value = heroVis;
+      floor.visible = heroVis > 0.02;
+    }
+
+    // ---- MACHINE: target state from scroll position ----
+    const storyX = small ? 0 : halfW * 0.4, storyY = small ? -1.0 : -0.05;
+    const sp = P.story;
+    const story = { x: storyX, y: storyY, z: 0, s: S, rx: 0.06 + Math.sin(sp * Math.PI) * 0.14, ry: -0.6 + sp * 1.2, rz: Math.sin(sp * Math.PI * 2) * 0.04 };
+    let T = { x: storyX, y: storyY - 6, z: 0, s: S * 0.4, rx: 0.5, ry: -1.6, rz: 0.2 };
+    T = mix(T, story, ease(remap(P.hero, 0.3, 1)));
+    if (P.statement > 0) {
+      const k = ease(remap(P.statement, 0.08, 0.62));
+      T = { x: lerp(storyX, small ? 0 : -storyX, k), y: lerp(storyY, small ? -0.2 : 0.05, k), z: lerp(0, 0.6, Math.sin(k * Math.PI)), s: S * lerp(1, 0.85, k), rx: lerp(story.rx, 0.12, k), ry: story.ry + k * Math.PI * 2, rz: story.rz };
+    }
+    const bgState = { x: small ? 0 : halfW * 1.15, y: small ? -7 : 1.1, z: -7, s: S * 0.85, rx: 0.25, ry: Math.PI * 2 + 0.6 + Math.sin(t * 0.25) * 0.5, rz: 0.08 };
+    T = mix(T, bgState, ease(remap(P.pricing, 0.1, 0.9)));
+    const bookState = { x: small ? 0 : halfW * 0.42, y: small ? 0.4 : 0, z: small ? -4 : -0.6, s: S * 0.95, rx: 0.1, ry: Math.PI * 2 - 0.5 + Math.sin(t * 0.35) * 0.25 * motion, rz: 0 };
+    T = mix(T, bookState, ease(remap(P.book, 0.2, 1)));
+    const L = reduced ? 14 : 7;
+    for (const k in M) M[k] = damp(M[k], T[k], L, dt);
+    const visible = M.y > -5.5;
+    machine.visible = visible;
+    mouse.sx = damp(mouse.sx, mouse.x, 3, dt); mouse.sy = damp(mouse.sy, mouse.y, 3, dt);
+    if (visible) {
+      machine.position.set(M.x, M.y + Math.sin(t * 1.1) * 0.06 * motion, M.z);
+      machine.scale.setScalar(M.s);
+      machine.rotation.set(M.rx + mouse.sy * 0.08, M.ry + mouse.sx * 0.18, M.rz + Math.sin(t * 0.9) * 0.015 * motion);
+      drumA += dt * (1.4 + vel * 0.06) * (reduced ? 0.25 : 1);
+      rotor.rotation.z = -drumA;
+      const tilt = Math.sin(t * 1.7) * 0.16 * motion + clamp((SITE.velocity() || 0) * 0.004, -0.15, 0.15);
+      waterMats.forEach(m => { m.uniforms.uTime.value = t * motion; m.uniforms.uTilt.value = tilt; });
+      tumble.forEach((m, i) => {
+        const a = -drumA * 0.85 + i * 1.7;
+        const r = 0.36 + Math.sin(t * 2 + i) * 0.06;
+        m.position.x = Math.cos(a) * r; m.position.y = HY + Math.min(Math.sin(a) * r, 0.25) - 0.05;
+        m.rotation.set(t * 1.3 + i, t * 0.9 + i * 2, a);
+      });
+      btnMat.color.copy(glow).multiplyScalar(2.5);
+      // door bubbles
+      const emit = (sp > 0 && P.statement < 0.4) ? 1 : 0.3;
+      mbData.forEach((b, i) => {
+        b.life += dt * motion;
+        if (b.life > b.max) { spawnMB(b); b.on = Math.random() < emit; }
+        b.v.y += dt * 0.12; b.p.addScaledVector(b.v, dt * motion);
+        const lifeK = b.life / b.max;
+        const s = b.on ? b.s * Math.min(1, lifeK * 5) * (1 - remap(lifeK, 0.85, 1)) : 0;
+        mtx.makeScale(s, s, s).setPosition(b.p.x + Math.sin(t * 2 + i) * 0.05, b.p.y, b.p.z);
+        mBubbles.setMatrixAt(i, mtx);
+      });
+      mBubbles.instanceMatrix.needsUpdate = true;
+    }
+
+    // ---- FOLDED CLOTHES ----
+    const cv = (sp > 0 ? 1 : remap(P.hero, 0.7, 1)) * (1 - remap(P.statement, 0.04, 0.22));
+    clothes.visible = cv > 0.01 && visible;
+    if (clothes.visible) {
+      clothItems.forEach((c, i) => {
+        const k = ease(remap(sp, 0.1 + i * 0.16, 0.24 + i * 0.16));
+        const a = (i / 5) * Math.PI * 2 + t * 0.35 * motion;
+        const ox = M.x + Math.cos(a) * 2.1 * M.s, oy = M.y + 0.3 * M.s + Math.sin(a * 2 + i) * 0.45 * M.s, oz = M.z + Math.sin(a) * 1.5 * M.s;
+        const sx = M.x + 1.5 * M.s, sy = M.y - 1.2 * M.s + i * 0.19 * M.s, sz = M.z + 1.15 * M.s;
+        c.position.set(lerp(ox, sx, k), lerp(oy, sy, k), lerp(oz, sz, k));
+        c.rotation.set(lerp(Math.sin(t * 0.8 + i) * 0.9, 0, k), lerp(t * 0.5 + i, 0.3 + (i % 2) * 0.12, k), lerp(Math.cos(t * 0.6 + i) * 0.5, 0, k));
+        c.scale.setScalar(M.s * 0.7 * cv);
+      });
+    }
+
+    // ---- STATEMENT TEXT ----
+    const tp = P.statement;
+    const textOp = remap(tp, 0.04, 0.24) * (1 - remap(tp, 0.62, 0.86));
+    if (textRows.length) {
+      const dist = CAM.z - textRows[0].position.z;
+      const hw = dist * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * aspect;
+      textRows.forEach((m, i) => {
+        m.visible = textOp > 0.001;
+        if (!m.visible) return;
+        const w = 2 * hw * (small ? 2.6 : 1.3), h = w * m.userData.ratio;
+        m.scale.set(w, h, 1);
+        const dir = i === 0 ? 1 : -1;
+        m.position.x = dir * (0.5 - tp) * w * 0.32;
+        m.position.y = (i === 0 ? 0.5 : -0.5) * h * 1.02 + dir * (tp - 0.5) * 0.8;
+        m.material.opacity = textOp * (i === 0 ? 0.95 : 0.8);
+      });
+    }
+
+    // ---- AMBIENT BUBBLES ----
+    bubbleMat.uniforms.uTime.value = t;
+    const scrollDrift = (SITE.velocity() || 0) * 0.004;
+    for (let i = 0; i < BCOUNT; i++) {
+      const b = bData[i];
+      b.y += (b.sp * dt * motion) - scrollDrift * dt * 0.5;
+      if (b.y > 1.15) { b.y = -1.15; b.u = Math.random() * 2 - 1; }
+      if (b.y < -1.2) b.y = 1.12;
+      const dz = CAM.z - b.z, hh = dz * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)), hw = hh * aspect;
+      const x = b.u * hw * 1.05 + Math.sin(t * b.w + b.ph) * 0.25 * motion;
+      const y = b.y * hh * 1.1 + CAM.y;
+      const s = b.s * (b.z > 1.5 ? 0.6 : 1) * (small ? 0.8 : 1);
+      mtx.makeScale(s, s, s).setPosition(x, y, b.z);
+      bubbles.setMatrixAt(i, mtx);
+    }
+    bubbles.instanceMatrix.needsUpdate = true;
+
+    // ---- glow centre follows the focal object ----
+    if (heroVis > 0.5) tmpV.set(0, (PED_TOP + 0.9) * S + hero.position.y, 0);
+    else if (SITE.active === 'pricing' || SITE.active === 'how' || SITE.active === 'faq') tmpV.set(0, 0.3, 0);
+    else tmpV.set(M.x, M.y, M.z);
+    tmpV.project(camera);
+    const cu = bgMat.uniforms.uCenter.value;
+    cu.x = damp(cu.x, tmpV.x * 0.5 + 0.5, 3, dt); cu.y = damp(cu.y, clamp(tmpV.y * 0.5 + 0.5, 0.1, 0.9), 3, dt);
+
+    // ---- camera parallax ----
+    camera.position.set(CAM.x + mouse.sx * 0.35 * motion, CAM.y - mouse.sy * 0.2 * motion, CAM.z);
+    camera.lookAt(0, 0, 0);
+
+    composer.render();
+  }
+
+  // compile shaders with everything visible, then start the loop
+  SITE.loader.set(80);
+  renderer.compile(scene, camera);
+  frame();
+  SITE.loader.set(100);
+
+  let raf = 0;
+  const loop = () => { raf = requestAnimationFrame(loop); frame(); };
+  loop();
+  document.addEventListener('visibilitychange', () => {
+    cancelAnimationFrame(raf);
+    if (!document.hidden) { clock.getDelta(); loop(); }
+  });
+}
+
+main().catch(err => {
+  console.error('[3D] disabled:', err);
+  document.documentElement.classList.add('no-webgl');
+  SITE.loader.set(100);
+});
+</script>
+</body>
+</html>
