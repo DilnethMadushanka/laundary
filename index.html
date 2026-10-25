@@ -66,9 +66,9 @@ html.loaded .loader{opacity:0;visibility:hidden}
 .loader-inner{display:grid;justify-items:center;gap:22px}
 .drum{width:132px;height:132px;border-radius:50%;position:relative;background:radial-gradient(circle at 35% 30%,#fff,#c9d0da 45%,#7d8794 100%);box-shadow:0 0 60px color-mix(in srgb,var(--accent) 45%,transparent)}
 .drum::before{content:"";position:absolute;inset:14px;border-radius:50%;background:#12141a;box-shadow:inset 0 0 0 4px #2a2e38}
-.drum-spin{position:absolute;inset:20px;border-radius:50%;overflow:hidden;animation:spin 1.1s linear infinite;
+.drum-spin{position:absolute;inset:20px;border-radius:50%;overflow:hidden;animation:spin 1.1s linear infinite;will-change:transform;transform:translateZ(0);
   background:radial-gradient(circle,#3a404c 2.2px,transparent 2.6px) 0 0/13px 13px,linear-gradient(#1b1f27,#1b1f27)}
-.drum-spin::after{content:"";position:absolute;left:-10%;right:-10%;bottom:-8%;height:52%;border-radius:45% 55% 0 0;background:linear-gradient(color-mix(in srgb,var(--accent) 85%,#fff),color-mix(in srgb,var(--accent) 60%,#000));opacity:.85;animation:slosh 1.6s ease-in-out infinite alternate}
+.drum-spin::after{content:"";position:absolute;left:-10%;right:-10%;bottom:-8%;height:52%;border-radius:45% 55% 0 0;background:linear-gradient(color-mix(in srgb,var(--accent) 85%,#fff),color-mix(in srgb,var(--accent) 60%,#000));opacity:.85;animation:slosh 1.6s ease-in-out infinite alternate;will-change:transform}
 .drum-glass{position:absolute;inset:20px;border-radius:50%;background:linear-gradient(135deg,rgba(255,255,255,.35),transparent 45%)}
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes slosh{from{transform:rotate(-14deg) translateY(4px)}to{transform:rotate(14deg)}}
@@ -943,10 +943,12 @@ const CONTENT = {
     if (hasGsap) ScrollTrigger.refresh();
     SITE.emit('ready');
   }
-  (function tick() {
-    // creeps forward on its own so the counter never looks frozen
-    const cap = loader.target >= 100 ? 100 : Math.min(96, Math.max(loader.target, loader.shown + 0.12));
-    loader.shown += (cap - loader.shown) * (reduced ? 1 : 0.12) + (cap > loader.shown ? 0.3 : 0);
+  let last = performance.now();
+  (function tick(now = performance.now()) {
+    // time-based, so a busy frame doesn't make the counter jump; creeps forward so it never looks frozen
+    const dt = Math.min(now - last, 100); last = now;
+    const cap = loader.target >= 100 ? 100 : Math.min(96, Math.max(loader.target, loader.shown + 2));
+    loader.shown += reduced ? cap - loader.shown : Math.max(0, cap - loader.shown) * (1 - Math.exp(-dt / 140));
     loader.shown = Math.min(loader.shown, cap);
     num.textContent = Math.round(loader.shown);
     if (loader.shown >= 99.5 && loader.target >= 100) { num.textContent = '100'; setTimeout(finishLoading, reduced ? 0 : 250); return; }
@@ -979,6 +981,8 @@ async function main() {
   SITE.loader.set(60);
 
   // ---------- helpers ----------
+  // hand control back to the browser between heavy build steps so the loader keeps animating smoothly
+  const yieldFrame = () => new Promise(res => requestAnimationFrame(() => setTimeout(res, 0)));
   const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
   const lerp = (a, b, k) => a + (b - a) * k;
   const remap = (v, a, b) => clamp((v - a) / (b - a), 0, 1);
@@ -1005,7 +1009,9 @@ async function main() {
   camera.lookAt(0, 0, 0);
 
   const pmrem = new THREE.PMREMGenerator(renderer);
+  await yieldFrame();
   scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+  SITE.loader.set(66); await yieldFrame();
 
   const composer = new EffectComposer(renderer, new THREE.WebGLRenderTarget(innerWidth, innerHeight, { type: THREE.HalfFloatType, samples: lowPower ? 0 : 4 }));
   composer.addPass(new RenderPass(scene, camera));
@@ -1188,6 +1194,8 @@ async function main() {
       : (car.pos = base + delta);
   });
 
+  SITE.loader.set(72); await yieldFrame();
+
   // =====================================================================
   //  WASHING MACHINE
   // =====================================================================
@@ -1286,6 +1294,8 @@ async function main() {
   [-0.24, -0.08, 0.08].forEach(x => { const b = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.03, 20), btnMat); b.rotation.x = Math.PI / 2; b.position.set(x, 0.86, FZ + 0.035); mInner.add(b); });
   const footGeo = new THREE.CylinderGeometry(0.07, 0.08, 0.08, 20), footMat = new THREE.MeshStandardMaterial({ color: '#1a1c22', roughness: 0.6 });
   [[-0.75, -0.6], [0.75, -0.6], [-0.75, 0.6], [0.75, 0.6]].forEach(([x, z]) => { const f = new THREE.Mesh(footGeo, footMat); f.position.set(x, -H / 2 - 0.09, z); mInner.add(f); });
+
+  SITE.loader.set(78); await yieldFrame();
 
   // =====================================================================
   //  BUBBLES (instanced, iridescent fresnel shader)
@@ -1585,8 +1595,11 @@ async function main() {
   }
 
   // compile shaders with everything visible, then start the loop
-  SITE.loader.set(80);
-  renderer.compile(scene, camera);
+  SITE.loader.set(84); await yieldFrame();
+  if (renderer.compileAsync) await renderer.compileAsync(scene, camera); else renderer.compile(scene, camera);
+  SITE.loader.set(92); await yieldFrame();
+  frame();                       // first full render (also warms the bloom + reflection targets)
+  await yieldFrame();
   frame();
   SITE.loader.set(100);
 
